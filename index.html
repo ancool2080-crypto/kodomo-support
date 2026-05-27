@@ -1495,6 +1495,12 @@ function showApp() {
   const badge = document.getElementById('user-badge');
   if (badge) badge.textContent = `${window.arohaDB.roleLabel||''} ${window.arohaDB.user?.displayName||''}`;
   startRealtimeListeners();
+  // APIキーをFirestoreから復元（非同期・エラーは無視）
+  setTimeout(() => {
+    if (typeof restoreUserSettings === 'function') {
+      restoreUserSettings().catch(() => {});
+    }
+  }, 500);
 }
 
 // ── 認証 ─────────────────────────────
@@ -1742,6 +1748,34 @@ window.authSubmit = () => {
     const role   = document.getElementById('auth-role').value;
     const invite = document.getElementById('auth-invite').value.trim();
     window.firebaseSignUp(email, password, name, role, invite);
+  }
+};
+
+// ── ユーザー設定（APIキー等）の保存・復元 ──
+window.saveUserSetting = async (key, value) => {
+  const { user } = window.arohaDB;
+  if (!user) return;
+  try {
+    await setDoc(
+      doc(db, 'userSettings', user.uid),
+      { [key]: value, updatedAt: serverTimestamp() },
+      { merge: true }  // 既存フィールドを上書きしない
+    );
+  } catch(e) {
+    console.warn('[Aroha] saveUserSetting error:', e);
+    throw e;
+  }
+};
+
+window.loadUserSetting = async (key) => {
+  const { user } = window.arohaDB;
+  if (!user) return null;
+  try {
+    const snap = await getDoc(doc(db, 'userSettings', user.uid));
+    return snap.exists() ? (snap.data()[key] || null) : null;
+  } catch(e) {
+    console.warn('[Aroha] loadUserSetting error:', e);
+    return null;
   }
 };
 
@@ -4141,24 +4175,68 @@ function renderHwHistory() {
 // ─────────────────────────────────
 //  API KEY
 // ─────────────────────────────────
-function saveApiKey() {
+// ─────────────────────────────────
+//  API KEY（Firestore同期対応）
+// ─────────────────────────────────
+// メモリキャッシュ（ページ内で何度もFirestoreを叩かないため）
+let _cachedApiKey = '';
+
+async function saveApiKey() {
   const key = document.getElementById('api-key-input').value.trim();
-  if (!key.startsWith('sk-ant-')) { alert('正しいAPIキー形式ではありません（sk-ant-で始まります）'); return; }
+  if (!key.startsWith('sk-ant-')) {
+    alert('正しいAPIキー形式ではありません（sk-ant-で始まります）');
+    return;
+  }
+  // 1. まずlocalStorageに保存（即時利用・オフライン対応）
   localStorage.setItem('cst_apikey', key);
+  _cachedApiKey = key;
   document.getElementById('api-key-input').value = '';
   updateApiStatus();
+
+  // 2. Firestoreにも保存（デバイス間同期）
+  const { user, familyId } = window.arohaDB || {};
+  if (user && familyId) {
+    try {
+      // firebase.jsのdbSaveではなく直接保存（userSettingsコレクション）
+      await window.saveUserSetting('anthropicApiKey', key);
+      console.log('[Aroha] APIキーをFirestoreに保存しました');
+    } catch(e) {
+      console.warn('[Aroha] Firestore保存失敗（localStorageは保存済み）:', e);
+    }
+  }
 }
-function getApiKey() { return localStorage.getItem('cst_apikey') || ''; }
+
+function getApiKey() {
+  if (_cachedApiKey) return _cachedApiKey;
+  const local = localStorage.getItem('cst_apikey') || '';
+  _cachedApiKey = local;
+  return local;
+}
+
 function updateApiStatus() {
   const key = getApiKey();
   const banner = document.getElementById('api-banner');
   const done   = document.getElementById('api-set-done');
+  if (!banner || !done) return;
   if (key) {
     done.style.display = 'block';
     banner.style.borderColor = 'var(--sage-light)';
     banner.style.background  = '#EEF5EE';
   } else {
     done.style.display = 'none';
+    banner.style.borderColor = '';
+    banner.style.background  = '';
+  }
+}
+
+// Firestoreからユーザー設定を復元（ログイン後に呼ぶ）
+async function restoreUserSettings() {
+  const key = await window.loadUserSetting('anthropicApiKey');
+  if (key && key.startsWith('sk-ant-')) {
+    localStorage.setItem('cst_apikey', key);
+    _cachedApiKey = key;
+    updateApiStatus();
+    console.log('[Aroha] APIキーをFirestoreから復元しました');
   }
 }
 
