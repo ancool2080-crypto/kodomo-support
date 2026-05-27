@@ -1282,7 +1282,7 @@
     color: var(--ink-soft); transition: all 0.15s; text-align: center;
     line-height: 1.35;
   }
-  .hw-mode-btn:first-child { border-right: 1.5px solid var(--mist); }
+  .hw-mode-btn:not(:last-child) { border-right: 1.5px solid var(--mist); }
   .hw-mode-btn.active { background: var(--sage-dark); color: white; font-weight: 700; }
 
   /* チャットエリア */
@@ -3452,11 +3452,6 @@ function selectHwSubj(btn, subj) {
   document.querySelectorAll('.hw-subj-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   hwSubject = subj;
-}
-function selectHwMode(mode) {
-  hwMode = mode;
-  document.getElementById('hw-mode-child').classList.toggle('active', mode === 'child');
-  document.getElementById('hw-mode-parent').classList.toggle('active', mode === 'parent');
 }
 
 // ── 画像ハンドリング ──────────────────
