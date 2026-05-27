@@ -1,0 +1,2893 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>こどもサポートツール</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:       #F7F3EC;
+    --warm-white:  #FDFAF5;
+    --sage:        #5C7A5F;
+    --sage-light:  #8AAE8D;
+    --sage-dark:   #3D5740;
+    --terra:       #C0714F;
+    --terra-light: #DDA08A;
+    --terra-pale:  #F5E6DF;
+    --ochre:       #C89A3E;
+    --ochre-light: #EDD98A;
+    --bark:        #6B4F3A;
+    --bark-light:  #A07A5F;
+    --ink:         #2A2118;
+    --ink-soft:    #4A3F35;
+    --mist:        #B8C4B0;
+    --shadow:      rgba(42,33,24,0.12);
+    --radius-sm:   8px;
+    --radius-md:   16px;
+    --radius-lg:   24px;
+    --radius-xl:   36px;
+    --font-serif:  'Shippori Mincho', serif;
+    --font-sans:   'Zen Kaku Gothic New', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  /* ─── HEADER ─────────────────────────────── */
+  .site-header {
+    background: var(--sage-dark);
+    padding: 20px 24px 18px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  }
+  .header-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .header-icon {
+    width: 42px;
+    height: 42px;
+    background: var(--ochre);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .header-title {
+    font-family: var(--font-serif);
+    color: var(--cream);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+  }
+  .header-sub {
+    font-family: var(--font-sans);
+    color: var(--mist);
+    font-size: 0.72rem;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+
+  /* ─── NAV TABS ───────────────────────────── */
+  .nav-bar {
+    background: var(--sage-dark);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    position: sticky;
+    top: 82px;
+    z-index: 99;
+  }
+  .nav-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-inner::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    flex-shrink: 0;
+    padding: 14px 20px 12px;
+    color: var(--mist);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--cream); }
+  .nav-tab.active {
+    color: var(--ochre-light);
+    border-bottom-color: var(--ochre);
+  }
+
+  /* ─── MAIN CONTENT ───────────────────────── */
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  .module { display: none; animation: fadeIn 0.3s ease; }
+  .module.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ─── CARDS ──────────────────────────────── */
+  .card {
+    background: var(--warm-white);
+    border-radius: var(--radius-lg);
+    padding: 28px 28px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px var(--shadow);
+    border: 1px solid rgba(255,255,255,0.8);
+  }
+  .card-title {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--sage-dark);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .icon { font-size: 1.2rem; }
+
+  /* ─── SECTION HEADING ────────────────────── */
+  .section-heading {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .section-sub {
+    font-size: 0.82rem;
+    color: var(--bark-light);
+    margin-bottom: 24px;
+    font-weight: 300;
+  }
+
+  /* ─── SCENE CARDS (Module 1) ─────────────── */
+  .scene-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .scene-btn {
+    background: var(--warm-white);
+    border: 2px solid var(--mist);
+    border-radius: var(--radius-md);
+    padding: 18px 16px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .scene-btn:hover {
+    border-color: var(--sage);
+    box-shadow: 0 4px 16px var(--shadow);
+    transform: translateY(-2px);
+  }
+  .scene-btn.selected {
+    border-color: var(--sage);
+    background: #EEF5EE;
+  }
+  .scene-btn .scene-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .scene-btn .scene-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .scene-btn .scene-desc {
+    font-size: 0.75rem;
+    color: var(--bark-light);
+    margin-top: 4px;
+    font-weight: 300;
+  }
+
+  /* ─── GUIDE PANEL ────────────────────────── */
+  .guide-panel {
+    background: linear-gradient(135deg, #F0F5F0 0%, #EEF0E8 100%);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    border: 1px solid var(--mist);
+    display: none;
+  }
+  .guide-panel.visible { display: block; animation: fadeIn 0.35s ease; }
+  .guide-panel-title {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    color: var(--sage-dark);
+    font-weight: 700;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .step-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+  .step-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    background: var(--sage);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-text { font-size: 0.88rem; line-height: 1.65; color: var(--ink-soft); }
+  .step-text strong { color: var(--sage-dark); font-weight: 700; }
+
+  .tip-box {
+    background: var(--terra-pale);
+    border-left: 4px solid var(--terra);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 14px 16px;
+    margin-top: 18px;
+    font-size: 0.83rem;
+    color: var(--bark);
+    line-height: 1.7;
+  }
+  .tip-box strong { color: var(--terra); }
+
+  .affirm-box {
+    background: linear-gradient(135deg, #FFF8EC, #FFF3DC);
+    border: 1px solid var(--ochre-light);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: var(--bark);
+    line-height: 1.7;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .affirm-box .affirm-icon { font-size: 1.3rem; flex-shrink: 0; }
+
+  /* ─── MODULE 2 LEARNING ──────────────────── */
+  .subject-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .subject-tab {
+    padding: 8px 18px;
+    border-radius: 100px;
+    border: 2px solid var(--mist);
+    background: white;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--ink-soft);
+  }
+  .subject-tab:hover { border-color: var(--sage); }
+  .subject-tab.active {
+    background: var(--sage);
+    border-color: var(--sage);
+    color: white;
+  }
+
+  .subject-panel { display: none; }
+  .subject-panel.active { display: block; animation: fadeIn 0.25s ease; }
+
+  .strategy-item {
+    background: var(--warm-white);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--sage-light);
+    box-shadow: 0 1px 6px var(--shadow);
+  }
+  .strategy-item h4 {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    color: var(--sage-dark);
+    margin-bottom: 6px;
+  }
+  .strategy-item p {
+    font-size: 0.83rem;
+    color: var(--ink-soft);
+    line-height: 1.7;
+  }
+  .strategy-item .tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 100px;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+  .tag-adhd { background: #E8F0FF; color: #3355AA; }
+  .tag-asd { background: #F0E8FF; color: #6633AA; }
+  .tag-both { background: #E8F5E8; color: var(--sage-dark); }
+  .tag-sensory { background: #FFF0E8; color: var(--terra); }
+
+  /* ─── MODULE 3 SELF-CHECK ────────────────── */
+  .checkin-card {
+    background: linear-gradient(135deg, var(--sage-dark) 0%, #2D4A30 100%);
+    border-radius: var(--radius-xl);
+    padding: 32px 28px;
+    color: white;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .checkin-card::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .checkin-card h3 {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--ochre-light);
+  }
+  .checkin-card p {
+    font-size: 0.83rem;
+    opacity: 0.85;
+    margin-bottom: 20px;
+    font-weight: 300;
+    line-height: 1.8;
+  }
+
+  .emotion-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .emotion-btn {
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: var(--radius-md);
+    padding: 14px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    color: white;
+  }
+  .emotion-btn:hover { background: rgba(255,255,255,0.2); }
+  .emotion-btn.selected { background: var(--ochre); border-color: var(--ochre); }
+  .emotion-btn .e-icon { font-size: 1.6rem; display: block; margin-bottom: 4px; }
+  .emotion-btn .e-label { font-size: 0.7rem; display: block; font-weight: 500; }
+
+  .checkin-advice {
+    background: rgba(255,255,255,0.1);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    font-size: 0.83rem;
+    line-height: 1.75;
+    display: none;
+    margin-top: 16px;
+  }
+  .checkin-advice.visible { display: block; animation: fadeIn 0.3s ease; }
+  .checkin-advice strong { color: var(--ochre-light); }
+
+  /* Record list */
+  .record-list { display: flex; flex-direction: column; gap: 10px; }
+  .record-item {
+    background: var(--warm-white);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 1px 6px var(--shadow);
+  }
+  .record-emotion { font-size: 1.4rem; }
+  .record-info { flex: 1; }
+  .record-date { font-size: 0.72rem; color: var(--bark-light); }
+  .record-note { font-size: 0.83rem; color: var(--ink-soft); margin-top: 2px; }
+  .record-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--bark-light);
+    font-size: 0.85rem;
+  }
+
+  /* Note input */
+  .note-input {
+    width: 100%;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    color: white;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    resize: none;
+    height: 80px;
+    margin-top: 14px;
+    outline: none;
+  }
+  .note-input::placeholder { color: rgba(255,255,255,0.4); }
+  .note-input:focus { border-color: var(--ochre-light); }
+
+  /* ─── BUTTONS ─────────────────────────────── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 24px;
+    border-radius: 100px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .btn-primary {
+    background: var(--ochre);
+    color: white;
+    box-shadow: 0 3px 12px rgba(200,154,62,0.35);
+  }
+  .btn-primary:hover {
+    background: var(--bark);
+    box-shadow: 0 5px 18px rgba(107,79,58,0.35);
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 2px solid rgba(255,255,255,0.3);
+    color: white;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+
+  /* ─── MODULE 4 KNOWLEDGE ─────────────────── */
+  .knowledge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .knowledge-card {
+    background: var(--warm-white);
+    border-radius: var(--radius-lg);
+    padding: 24px 20px;
+    box-shadow: 0 2px 10px var(--shadow);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+  }
+  .knowledge-card:hover {
+    box-shadow: 0 6px 20px var(--shadow);
+    transform: translateY(-3px);
+    border-color: var(--sage-light);
+  }
+  .knowledge-card .k-icon {
+    font-size: 2rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .knowledge-card h4 {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    color: var(--sage-dark);
+    margin-bottom: 6px;
+  }
+  .knowledge-card p {
+    font-size: 0.77rem;
+    color: var(--bark-light);
+    line-height: 1.65;
+  }
+
+  /* Knowledge detail modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(42,33,24,0.55);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal-box {
+    background: var(--warm-white);
+    border-radius: var(--radius-xl);
+    padding: 36px 32px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-close {
+    float: right;
+    background: var(--cream);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+    margin-bottom: 8px;
+    color: var(--ink-soft);
+    transition: background 0.2s;
+  }
+  .modal-close:hover { background: var(--mist); }
+  .modal-title {
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--sage-dark);
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  .modal-body p {
+    font-size: 0.87rem;
+    line-height: 1.85;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+  .modal-body h5 {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    color: var(--ink);
+    margin: 18px 0 8px;
+  }
+  .modal-body ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+  }
+  .modal-body ul li {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    padding-left: 18px;
+    position: relative;
+    line-height: 1.65;
+  }
+  .modal-body ul li::before {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    color: var(--sage-light);
+    font-size: 0.6rem;
+    top: 6px;
+  }
+
+  /* ─── PROGRESS / STREAK ──────────────────── */
+  .streak-bar {
+    background: linear-gradient(135deg, #FFF8EC, #FFF0D8);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    border: 1px solid var(--ochre-light);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .streak-num {
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--ochre);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .streak-text { flex: 1; }
+  .streak-text strong {
+    font-size: 0.88rem;
+    color: var(--bark);
+    display: block;
+    font-weight: 700;
+  }
+  .streak-text span {
+    font-size: 0.75rem;
+    color: var(--bark-light);
+    font-weight: 300;
+  }
+  .streak-dots { display: flex; gap: 5px; margin-top: 8px; }
+  .streak-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--mist);
+  }
+  .streak-dot.filled { background: var(--ochre); }
+
+  /* ─── API KEY SETUP ─────────────────────── */
+  .api-setup-banner {
+    background: linear-gradient(135deg, #FFF8EC, #FFF0D8);
+    border: 2px dashed var(--ochre-light);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .api-setup-banner .setup-icon { font-size: 1.6rem; flex-shrink: 0; }
+  .api-setup-banner h4 {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    color: var(--bark);
+    margin-bottom: 8px;
+  }
+  .api-setup-banner p { font-size: 0.8rem; color: var(--bark-light); margin-bottom: 10px; line-height: 1.7; }
+  .api-key-input {
+    width: 100%;
+    border: 1px solid var(--mist);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    background: white;
+    color: var(--ink);
+    outline: none;
+    margin-bottom: 8px;
+  }
+  .api-key-input:focus { border-color: var(--ochre); }
+  .api-set-done {
+    background: #EEF5EE;
+    border: 1px solid var(--sage-light);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    color: var(--sage-dark);
+    display: none;
+  }
+
+  /* ─── DIARY MODULE ───────────────────────── */
+  .diary-form-card {
+    background: var(--warm-white);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: 0 2px 12px var(--shadow);
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.8);
+  }
+  .diary-form-card h3 {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    color: var(--sage-dark);
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--bark);
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .form-group { margin-bottom: 18px; }
+  .diary-textarea {
+    width: 100%;
+    border: 1.5px solid var(--mist);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    font-family: var(--font-sans);
+    font-size: 0.87rem;
+    color: var(--ink);
+    background: var(--cream);
+    resize: none;
+    outline: none;
+    line-height: 1.75;
+    transition: border-color 0.2s;
+  }
+  .diary-textarea:focus { border-color: var(--sage); background: white; }
+
+  /* Scene tag multi-select */
+  .tag-select-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tag-select-btn {
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1.5px solid var(--mist);
+    background: white;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--ink-soft);
+    transition: all 0.15s;
+  }
+  .tag-select-btn:hover { border-color: var(--sage-light); }
+  .tag-select-btn.active {
+    background: var(--sage);
+    border-color: var(--sage);
+    color: white;
+  }
+  .tag-select-btn.active-warn {
+    background: var(--terra);
+    border-color: var(--terra);
+    color: white;
+  }
+
+  /* Toggle yes/no */
+  .toggle-row {
+    display: flex;
+    gap: 10px;
+  }
+  .toggle-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--mist);
+    background: white;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    color: var(--ink-soft);
+  }
+  .toggle-btn:hover { border-color: var(--sage-light); }
+  .toggle-btn.active-yes { background: var(--terra-pale); border-color: var(--terra); color: var(--terra); font-weight: 700; }
+  .toggle-btn.active-no  { background: #EEF5EE; border-color: var(--sage); color: var(--sage-dark); font-weight: 700; }
+
+  /* Mood slider */
+  .mood-slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .mood-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 10px;
+    background: linear-gradient(to right, var(--terra) 0%, var(--ochre) 50%, var(--sage) 100%);
+    outline: none;
+  }
+  .mood-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--sage-dark);
+    cursor: pointer;
+    box-shadow: 0 2px 6px var(--shadow);
+  }
+  .mood-label { font-size: 1.3rem; width: 28px; text-align: center; }
+
+  /* AI advice panel */
+  .ai-advice-panel {
+    background: linear-gradient(135deg, var(--sage-dark) 0%, #2A3D2D 100%);
+    border-radius: var(--radius-lg);
+    padding: 24px 26px;
+    margin-top: 18px;
+    color: white;
+    display: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-advice-panel::before {
+    content: '🌱';
+    position: absolute;
+    right: 20px;
+    top: 16px;
+    font-size: 2.5rem;
+    opacity: 0.15;
+  }
+  .ai-advice-panel.visible { display: block; animation: fadeIn 0.4s ease; }
+  .ai-advice-panel .ai-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--ochre-light);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ai-advice-panel .ai-text {
+    font-size: 0.87rem;
+    line-height: 1.85;
+    color: rgba(255,255,255,0.92);
+  }
+  .ai-advice-panel .ai-text strong { color: var(--ochre-light); }
+  .ai-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
+    padding: 8px 0;
+  }
+  .dot-anim span {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--ochre-light);
+    margin: 0 2px;
+    animation: dotBounce 1.2s infinite;
+  }
+  .dot-anim span:nth-child(2) { animation-delay: 0.2s; }
+  .dot-anim span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotBounce {
+    0%,80%,100% { transform: scale(0.7); opacity: 0.5; }
+    40% { transform: scale(1.1); opacity: 1; }
+  }
+
+  /* Diary entry list */
+  .diary-entry {
+    background: var(--warm-white);
+    border-radius: var(--radius-lg);
+    padding: 22px 24px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 8px var(--shadow);
+    border-left: 4px solid var(--sage-light);
+  }
+  .diary-entry.has-scolded { border-left-color: var(--terra); }
+  .diary-entry-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .diary-entry-date {
+    font-size: 0.75rem;
+    color: var(--bark-light);
+    font-weight: 500;
+  }
+  .diary-entry-mood { font-size: 1.1rem; }
+  .diary-tag {
+    font-size: 0.68rem;
+    padding: 2px 9px;
+    border-radius: 100px;
+    background: var(--cream);
+    color: var(--bark);
+    font-weight: 600;
+    border: 1px solid var(--mist);
+  }
+  .diary-entry-body {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    line-height: 1.75;
+    margin-bottom: 10px;
+  }
+  .diary-entry-advice {
+    background: linear-gradient(135deg, #EEF5EE, #E8F0E8);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 0.8rem;
+    color: var(--sage-dark);
+    line-height: 1.7;
+    border-left: 3px solid var(--sage-light);
+  }
+  .diary-entry-advice .advice-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--sage);
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .diary-empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--bark-light);
+    font-size: 0.85rem;
+    line-height: 2;
+  }
+  .diary-empty .empty-icon { font-size: 2.5rem; display: block; margin-bottom: 12px; opacity: 0.5; }
+
+  /* ─── MODULE 6: 成長記録 ────────────────── */
+  .growth-cat-tabs {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .growth-cat-btn {
+    padding: 7px 16px;
+    border-radius: 100px;
+    border: 1.5px solid var(--mist);
+    background: white;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--ink-soft);
+    transition: all 0.15s;
+  }
+  .growth-cat-btn:hover { border-color: var(--sage-light); }
+  .growth-cat-btn.active { background: var(--ochre); border-color: var(--ochre); color: white; }
+
+  .growth-input-row {
+    display: flex; gap: 10px; align-items: flex-end; margin-bottom: 14px;
+  }
+  .growth-input-row textarea {
+    flex: 1;
+    border: 1.5px solid var(--mist);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    resize: none;
+    outline: none;
+    height: 70px;
+    background: var(--cream);
+    line-height: 1.7;
+    transition: border-color 0.2s;
+  }
+  .growth-input-row textarea:focus { border-color: var(--ochre); background: white; }
+
+  .growth-timeline { display: flex; flex-direction: column; gap: 0; }
+  .growth-item {
+    display: flex; gap: 14px; padding: 14px 0;
+    border-bottom: 1px solid var(--mist);
+    align-items: flex-start;
+    animation: fadeIn 0.3s ease;
+  }
+  .growth-item:last-child { border-bottom: none; }
+  .growth-dot-col { display: flex; flex-direction: column; align-items: center; gap: 0; flex-shrink: 0; margin-top: 4px; }
+  .growth-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--ochre); flex-shrink: 0;
+    box-shadow: 0 0 0 3px var(--ochre-light);
+  }
+  .growth-line { width: 2px; flex: 1; background: var(--mist); margin-top: 4px; min-height: 20px; }
+  .growth-content { flex: 1; }
+  .growth-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
+  .growth-date { font-size: 0.72rem; color: var(--bark-light); }
+  .growth-cat-badge {
+    font-size: 0.68rem; font-weight: 700; padding: 2px 9px;
+    border-radius: 100px; background: var(--ochre-light); color: var(--bark);
+  }
+  .growth-text { font-size: 0.87rem; color: var(--ink-soft); line-height: 1.65; }
+  .growth-delete {
+    background: none; border: none; cursor: pointer;
+    font-size: 0.75rem; color: var(--mist); padding: 2px 6px;
+    border-radius: 4px; transition: color 0.15s;
+  }
+  .growth-delete:hover { color: var(--terra); }
+
+  .growth-stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px; margin-bottom: 20px;
+  }
+  .growth-stat-card {
+    background: var(--warm-white); border-radius: var(--radius-md);
+    padding: 16px 14px; text-align: center;
+    box-shadow: 0 1px 6px var(--shadow);
+  }
+  .growth-stat-num {
+    font-family: var(--font-serif); font-size: 1.8rem; font-weight: 700;
+    color: var(--ochre); line-height: 1;
+  }
+  .growth-stat-label { font-size: 0.72rem; color: var(--bark-light); margin-top: 4px; }
+
+  /* ─── MODULE 7: 振り返り ─────────────────── */
+  .reflect-step {
+    display: none;
+    animation: fadeIn 0.35s ease;
+  }
+  .reflect-step.active { display: block; }
+
+  .reflect-header {
+    background: linear-gradient(135deg, var(--terra) 0%, #A05040 100%);
+    border-radius: var(--radius-xl);
+    padding: 28px;
+    color: white;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .reflect-header::after {
+    content: '🫂';
+    position: absolute; right: 20px; top: 16px;
+    font-size: 3rem; opacity: 0.15;
+  }
+  .reflect-header h3 {
+    font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700;
+    margin-bottom: 8px; color: #FFE0D8;
+  }
+  .reflect-header p { font-size: 0.83rem; opacity: 0.85; line-height: 1.8; }
+
+  .reflect-progress {
+    display: flex; gap: 6px; margin-bottom: 20px; align-items: center;
+  }
+  .reflect-prog-dot {
+    width: 10px; height: 10px; border-radius: 50%; background: var(--mist);
+    transition: all 0.3s;
+  }
+  .reflect-prog-dot.done { background: var(--terra); }
+  .reflect-prog-dot.current { background: var(--terra); box-shadow: 0 0 0 3px var(--terra-pale); }
+  .reflect-prog-line { flex: 1; height: 2px; background: var(--mist); }
+
+  .reflect-card {
+    background: var(--warm-white); border-radius: var(--radius-lg);
+    padding: 24px 26px; margin-bottom: 16px;
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+  .reflect-card h4 {
+    font-family: var(--font-serif); font-size: 1rem; color: var(--ink);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .trigger-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .trigger-btn {
+    padding: 8px 14px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--mist); background: white;
+    font-size: 0.8rem; cursor: pointer; transition: all 0.15s;
+    color: var(--ink-soft);
+  }
+  .trigger-btn:hover { border-color: var(--terra-light); }
+  .trigger-btn.active { background: var(--terra-pale); border-color: var(--terra); color: var(--terra); font-weight: 700; }
+
+  .science-box {
+    background: linear-gradient(135deg, #F0EEF8, #EAE8F4);
+    border-radius: var(--radius-md); padding: 18px 20px;
+    border-left: 4px solid #8B7BB0;
+    margin-top: 14px;
+  }
+  .science-box .sci-label {
+    font-size: 0.7rem; font-weight: 700; color: #6B5B95;
+    letter-spacing: 0.1em; margin-bottom: 8px;
+  }
+  .science-box p { font-size: 0.83rem; color: var(--ink-soft); line-height: 1.75; }
+
+  .permission-box {
+    background: linear-gradient(135deg, #FFF0D8, #FFE8C0);
+    border-radius: var(--radius-lg); padding: 24px;
+    text-align: center; border: 1px solid var(--ochre-light);
+    margin-bottom: 16px;
+  }
+  .permission-box .perm-icon { font-size: 2.5rem; margin-bottom: 12px; display: block; }
+  .permission-box h4 {
+    font-family: var(--font-serif); font-size: 1.1rem;
+    color: var(--bark); margin-bottom: 12px; font-weight: 700;
+  }
+  .permission-box p { font-size: 0.87rem; color: var(--bark-light); line-height: 1.85; }
+
+  .next-action-box {
+    background: var(--sage-dark); border-radius: var(--radius-lg);
+    padding: 22px 24px; color: white; margin-bottom: 16px;
+  }
+  .next-action-box h4 {
+    font-family: var(--font-serif); font-size: 0.95rem;
+    color: var(--ochre-light); margin-bottom: 12px;
+  }
+  .next-action-box p { font-size: 0.85rem; opacity: 0.9; line-height: 1.8; }
+
+  .reflect-history-item {
+    background: var(--warm-white); border-radius: var(--radius-md);
+    padding: 14px 18px; margin-bottom: 10px;
+    border-left: 3px solid var(--terra-light);
+    box-shadow: 0 1px 5px var(--shadow);
+  }
+  .reflect-history-date { font-size: 0.72rem; color: var(--bark-light); margin-bottom: 6px; }
+  .reflect-history-text { font-size: 0.83rem; color: var(--ink-soft); line-height: 1.65; }
+
+  /* ─── MODULE 8: 月次レポート ─────────────── */
+  .report-header-card {
+    background: linear-gradient(135deg, #2A3D2D 0%, var(--sage-dark) 60%, #3A5040 100%);
+    border-radius: var(--radius-xl); padding: 32px 28px; color: white; margin-bottom: 24px;
+    position: relative; overflow: hidden;
+  }
+  .report-header-card::before {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .report-header-card h3 {
+    font-family: var(--font-serif); font-size: 1.3rem; font-weight: 700;
+    color: var(--ochre-light); margin-bottom: 6px;
+  }
+  .report-header-card p { font-size: 0.83rem; opacity: 0.75; margin-bottom: 20px; }
+
+  .month-selector {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .month-select {
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+    color: white; border-radius: var(--radius-sm); padding: 8px 12px;
+    font-family: var(--font-sans); font-size: 0.85rem; outline: none; cursor: pointer;
+  }
+  .month-select option { background: var(--sage-dark); }
+
+  .report-body { display: none; animation: fadeIn 0.4s ease; }
+  .report-body.visible { display: block; }
+
+  .report-section {
+    background: var(--warm-white); border-radius: var(--radius-lg);
+    padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 10px var(--shadow);
+  }
+  .report-section-title {
+    font-family: var(--font-serif); font-size: 1rem; color: var(--sage-dark);
+    font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .report-text { font-size: 0.87rem; color: var(--ink-soft); line-height: 1.85; }
+  .report-text strong { color: var(--ink); }
+  .report-loading {
+    text-align: center; padding: 48px 20px;
+    color: var(--bark-light); font-size: 0.87rem; line-height: 2.5;
+  }
+  .report-loading .r-icon { font-size: 2.5rem; display: block; margin-bottom: 12px; }
+
+  .report-stats-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px; margin-bottom: 20px;
+  }
+  .report-stat {
+    background: var(--warm-white); border-radius: var(--radius-md);
+    padding: 18px 14px; text-align: center; box-shadow: 0 1px 6px var(--shadow);
+  }
+  .report-stat .rs-num {
+    font-family: var(--font-serif); font-size: 2rem; font-weight: 700;
+    color: var(--sage-dark); line-height: 1;
+  }
+  .report-stat .rs-label { font-size: 0.72rem; color: var(--bark-light); margin-top: 4px; }
+
+  .priority-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+  .priority-item {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--cream); border-radius: var(--radius-sm); padding: 12px 14px;
+  }
+  .priority-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--sage); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 700; flex-shrink: 0;
+  }
+  .priority-text { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.65; }
+
+  /* ─── RESPONSIVE ─────────────────────────── */
+  @media (max-width: 600px) {
+    .main { padding: 24px 14px 80px; }
+    .card { padding: 20px 18px; }
+    .emotion-grid { grid-template-columns: repeat(4, 1fr); }
+    .scene-grid { grid-template-columns: 1fr; }
+    .knowledge-grid { grid-template-columns: 1fr; }
+    .modal-box { padding: 24px 18px; }
+    .checkin-card { padding: 24px 20px; }
+    .growth-input-row { flex-direction: column; }
+    .report-stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="header-icon">🌱</div>
+    <div>
+      <div class="header-title">こどもサポートツール</div>
+      <div class="header-sub">親子でいっしょに、一歩ずつ</div>
+    </div>
+  </div>
+</header>
+
+<!-- NAV -->
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <button class="nav-tab active" onclick="showModule('diary')">📔 日記</button>
+    <button class="nav-tab" onclick="showModule('growth')">🌱 成長記録</button>
+    <button class="nav-tab" onclick="showModule('reflect')">🔄 振り返り</button>
+    <button class="nav-tab" onclick="showModule('report')">📊 月次レポート</button>
+    <button class="nav-tab" onclick="showModule('scene')">🎬 場面別対応</button>
+    <button class="nav-tab" onclick="showModule('learn')">📖 学習サポート</button>
+    <button class="nav-tab" onclick="showModule('check')">🌿 自己チェック</button>
+    <button class="nav-tab" onclick="showModule('know')">🔬 知識ベース</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ══ MODULE 5: 日記 ＋ AI アドバイス ══ -->
+  <section id="mod-diary" class="module active">
+    <div class="section-heading">今日の日記</div>
+    <div class="section-sub">その日の様子を記録すると、AIがワンポイントアドバイスを返します。</div>
+
+    <!-- API Key Setup -->
+    <div class="api-setup-banner" id="api-banner">
+      <div class="setup-icon">🔑</div>
+      <div style="flex:1">
+        <h4>Claude API キーを設定してください</h4>
+        <p>AIアドバイス機能を使うには Anthropic の API キーが必要です。<br>
+        キーはこのブラウザにのみ保存され、外部には送信されません。</p>
+        <input class="api-key-input" id="api-key-input" type="password" placeholder="sk-ant-..." />
+        <button class="btn btn-primary" style="font-size:0.8rem;padding:9px 18px;" onclick="saveApiKey()">保存する</button>
+        <div class="api-set-done" id="api-set-done">✅ APIキーが設定されています</div>
+      </div>
+    </div>
+
+    <!-- Diary Form -->
+    <div class="diary-form-card">
+      <h3>📔 今日のできごとを書く</h3>
+
+      <div class="form-group">
+        <span class="form-label">📅 日付</span>
+        <input type="date" id="diary-date" class="api-key-input" style="width:auto;margin-bottom:0;" />
+      </div>
+
+      <div class="form-group">
+        <span class="form-label">🏷 今日あった場面（複数選択OK）</span>
+        <div class="tag-select-grid" id="scene-tags">
+          <button class="tag-select-btn" onclick="toggleTag(this,'homework')">📚 宿題・勉強</button>
+          <button class="tag-select-btn" onclick="toggleTag(this,'repeat')">🔁 何度も言った</button>
+          <button class="tag-select-btn" onclick="toggleTag(this,'running')">🏃 走り回り</button>
+          <button class="tag-select-btn" onclick="toggleTag(this,'brother')">👦🏻 弟トラブル</button>
+          <button class="tag-select-btn" onclick="toggleTag(this,'instruction')">📢 指示が通らない</button>
+          <button class="tag-select-btn" onclick="toggleTag(this,'meltdown')">🌊 癇癪・パニック</button>
+          <button class="tag-select-btn" onclick="toggleTag(this,'good')">⭐ 良いことがあった</button>
+          <button class="tag-select-btn" onclick="toggleTag(this,'school')">🏫 学校のこと</button>
+          <button class="tag-select-btn" onclick="toggleTag(this,'other')">💬 その他</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <span class="form-label">👦 子どもの様子（気になったこと・できたこと何でも）</span>
+        <textarea class="diary-textarea" id="diary-child" rows="4" placeholder="例）宿題を30分粘れた。ただ途中で弟に邪魔されて怒鳴り合いになった。最後は自分でなんとか終わらせた。"></textarea>
+      </div>
+
+      <div class="form-group">
+        <span class="form-label">🪞 自分の関わり方（どう対応したか）</span>
+        <textarea class="diary-textarea" id="diary-self" rows="3" placeholder="例）最初は隣で見守っていたが、弟が来てからイライラして声が荒くなってしまった。"></textarea>
+      </div>
+
+      <div class="form-group">
+        <span class="form-label">😤 叱ってしまいましたか？</span>
+        <div class="toggle-row">
+          <button class="toggle-btn" id="toggle-yes" onclick="toggleScolded(true)">😞 はい、叱った</button>
+          <button class="toggle-btn" id="toggle-no"  onclick="toggleScolded(false)">😌 うまく対応できた</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <span class="form-label">🌡 今日の自分のコンディション</span>
+        <div class="mood-slider-row">
+          <span class="mood-label">😤</span>
+          <input type="range" class="mood-slider" id="mood-slider" min="1" max="10" value="5" oninput="updateMoodLabel(this.value)" />
+          <span class="mood-label" id="mood-emoji">😐</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="submitDiary()" id="diary-submit-btn" style="width:100%;justify-content:center;padding:14px;">
+        💾 記録してAIアドバイスをもらう
+      </button>
+
+      <div class="ai-advice-panel" id="diary-ai-panel">
+        <div class="ai-label">✦ AI ワンポイントアドバイス</div>
+        <div class="ai-text" id="diary-ai-text"></div>
+      </div>
+    </div>
+
+    <!-- Past entries -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📋</span> 過去の日記</div>
+      <div id="diary-list"></div>
+    </div>
+  </section>
+
+  <!-- ══ MODULE 1: 場面別対応 ══ -->
+  <section id="mod-scene" class="module">
+    <div class="section-heading">場面別 対応ガイド</div>
+    <div class="section-sub">困った場面を選ぶと、具体的な関わり方を表示します。</div>
+
+    <div class="scene-grid">
+      <button class="scene-btn" onclick="showGuide('homework', this)">
+        <span class="scene-icon">📚</span>
+        <div>
+          <div class="scene-label">宿題・勉強を やらないとき</div>
+          <div class="scene-desc">ダラダラ、逃げる、癇癪</div>
+        </div>
+      </button>
+      <button class="scene-btn" onclick="showGuide('repeat', this)">
+        <span class="scene-icon">🔁</span>
+        <div>
+          <div class="scene-label">何度言っても 聞かないとき</div>
+          <div class="scene-desc">同じ注意を繰り返している</div>
+        </div>
+      </button>
+      <button class="scene-btn" onclick="showGuide('running', this)">
+        <span class="scene-icon">🏃</span>
+        <div>
+          <div class="scene-label">室内を走り 回るとき</div>
+          <div class="scene-desc">感覚刺激・興奮状態</div>
+        </div>
+      </button>
+      <button class="scene-btn" onclick="showGuide('brother', this)">
+        <span class="scene-icon">👦🏻</span>
+        <div>
+          <div class="scene-label">弟とのトラブル</div>
+          <div class="scene-desc">喧嘩・手が出る・泣かせる</div>
+        </div>
+      </button>
+      <button class="scene-btn" onclick="showGuide('instruction', this)">
+        <span class="scene-icon">📢</span>
+        <div>
+          <div class="scene-label">指示が通らない とき</div>
+          <div class="scene-desc">返事だけして動かない</div>
+        </div>
+      </button>
+      <button class="scene-btn" onclick="showGuide('meltdown', this)">
+        <span class="scene-icon">🌊</span>
+        <div>
+          <div class="scene-label">癇癪・パニックが 起きたとき</div>
+          <div class="scene-desc">激しい感情の爆発</div>
+        </div>
+      </button>
+    </div>
+
+    <div class="guide-panel" id="guide-panel">
+      <!-- Dynamic content -->
+    </div>
+  </section>
+
+  <!-- ══ MODULE 2: 学習サポート ══ -->
+  <section id="mod-learn" class="module">
+    <div class="section-heading">学習サポート</div>
+    <div class="section-sub">ASD・ADHD気質のお子さんが学びやすくなる工夫を紹介します。</div>
+
+    <div class="subject-tabs">
+      <button class="subject-tab active" onclick="showSubject('general', this)">全般</button>
+      <button class="subject-tab" onclick="showSubject('reading', this)">読み・書き</button>
+      <button class="subject-tab" onclick="showSubject('math', this)">計算</button>
+      <button class="subject-tab" onclick="showSubject('attention', this)">集中・座る</button>
+    </div>
+
+    <!-- 全般 -->
+    <div class="subject-panel active" id="sub-general">
+      <div class="strategy-item">
+        <span class="tag tag-both">共通</span>
+        <h4>📍 場所・時間を固定する</h4>
+        <p>「この椅子に座ったら勉強時間」という条件づけが予測可能性を生み、安心感につながります。毎日同じ時間・同じ場所で始めることを最優先にしてください。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-adhd">ADHD</span>
+        <h4>⏱️ タイマーで「終わり」を見える化</h4>
+        <p>「あと10分だよ」という言葉は機能しにくいです。アナログタイマー（残り時間が見えるもの）を使って、時間の経過を視覚で伝えましょう。1回5〜10分から始め、成功体験を積みます。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-both">共通</span>
+        <h4>🏆 できたことだけに注目する</h4>
+        <p>「10問中3問だけしかできなかった」ではなく「3問もできたね！」と伝えます。脳は成功体験の積み重ねで「もう一度やってみよう」という動機を形成します。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-asd">ASD</span>
+        <h4>📋 やることをリスト化して渡す</h4>
+        <p>「宿題やって、お風呂入って」という口頭指示より、手書きのメモや絵カードが有効です。終わったら✓をつける達成感も動機につながります。</p>
+      </div>
+    </div>
+
+    <!-- 読み書き -->
+    <div class="subject-panel" id="sub-reading">
+      <div class="strategy-item">
+        <span class="tag tag-sensory">感覚</span>
+        <h4>✍️ 鉛筆・紙にこだわらない</h4>
+        <p>マス目の大きいノート、太めの鉛筆（三角形タイプ）、書き心地の柔らかい紙が有効です。砂や塩の上に指で書く「感触遊び」から始めるのもよいです。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-asd">ASD</span>
+        <h4>🔤 一字ずつ、音と形をセットで</h4>
+        <p>「あ」の字を書きながら「あいうえおの〝あ〟」と声に出す習慣をつけます。文字カードを使い、形の特徴を指で追いながら覚える方法が定着しやすいです。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-adhd">ADHD</span>
+        <h4>📖 音読は短い文を繰り返す</h4>
+        <p>長い文章を読ませると途中で集中が切れます。1文〜2文を3回繰り返すサイクルが効果的。読む場所を指や定規で追うと行飛ばしを防げます。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-both">共通</span>
+        <h4>🎮 デジタルツールを補助に使う</h4>
+        <p>タブレットの手書き入力、音声読み上げ機能は書字が苦手な子の自信を守ります。学校の先生と相談しながら「書く練習」と「内容理解」を分けて考えましょう。</p>
+      </div>
+    </div>
+
+    <!-- 計算 -->
+    <div class="subject-panel" id="sub-math">
+      <div class="strategy-item">
+        <span class="tag tag-sensory">感覚</span>
+        <h4>🧮 まず「物」で計算する</h4>
+        <p>おはじき、積み木、ブロックなど手で触れるものを使います。「3個＋2個＝5個」が体験として理解されてから、数字に移行します。急いで紙の問題に移らないことが大切です。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-asd">ASD</span>
+        <h4>🔢 パターンで覚える工夫</h4>
+        <p>九九は唱えるよりも「視覚パターン表」が有効なことがあります。色分けされた九九表を壁に貼り、見ながら答える→少しずつ見ないで答える、という段階を踏みます。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-adhd">ADHD</span>
+        <h4>⚡ 一問ずつ、すぐに正解を確認</h4>
+        <p>まとめてやって最後に答え合わせではなく、1問解く→答えを確認→次へ、のサイクルが集中を維持します。即時フィードバックがADHD気質の子の脳には最も効果的です。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-both">共通</span>
+        <h4>🎯 問題数を極限まで減らす</h4>
+        <p>10問のドリルを5問に減らしても構いません。「全部やった！」という完了感の積み重ねが次の意欲を生みます。量より「できた体験」を優先します。</p>
+      </div>
+    </div>
+
+    <!-- 集中 -->
+    <div class="subject-panel" id="sub-attention">
+      <div class="strategy-item">
+        <span class="tag tag-sensory">感覚</span>
+        <h4>💺 座り方・椅子の工夫</h4>
+        <p>足が床に届かない椅子は集中の敵です。足台（踏み台）を置き、足が安定すると体幹が落ち着きます。クッションや座布団の厚みも試してみてください。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-sensory">感覚</span>
+        <h4>🌀 「動き」を勉強に組み込む</h4>
+        <p>5分座ったら2分だけ体を動かす時間を設けます。トランポリンや固有受容感覚を刺激する動き（壁を押す、腕立て伏せ）の後は落ち着きやすくなります。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-adhd">ADHD</span>
+        <h4>🔇 視覚・聴覚ノイズを減らす</h4>
+        <p>机の上は学習に使う物だけにします。テレビ・スマホは別の部屋へ。弟さんが同じ空間にいる場合は、衝立などで視覚的に区切るだけでも集中度が変わります。</p>
+      </div>
+      <div class="strategy-item">
+        <span class="tag tag-both">共通</span>
+        <h4>🌡️ 「勉強モード」の身体準備</h4>
+        <p>勉強前に水を飲む、深呼吸3回、手をぎゅっと握る→パッと開く、など「切り替えの儀式」を作ります。同じ儀式を毎日行うことで脳のスイッチが入りやすくなります。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ MODULE 3: 自己チェック ══ -->
+  <section id="mod-check" class="module">
+    <div class="section-heading">自己チェック</div>
+    <div class="section-sub">今日の自分の状態を確認して、子どもとの関わり方のヒントを得ます。</div>
+
+    <div id="streak-display" class="streak-bar">
+      <div class="streak-num" id="streak-num">0</div>
+      <div class="streak-text">
+        <strong>日連続 チェックイン</strong>
+        <span>毎日の気持ち確認が、変化への第一歩です</span>
+        <div class="streak-dots" id="streak-dots"></div>
+      </div>
+      <div style="font-size: 1.8rem;">🔥</div>
+    </div>
+
+    <div class="checkin-card">
+      <h3>今、どんな気持ちですか？</h3>
+      <p>正直に選んでください。どの感情も正常であり、気づくことが大切です。</p>
+
+      <div class="emotion-grid">
+        <button class="emotion-btn" onclick="selectEmotion('calm', '😌', '穏やか', this)">
+          <span class="e-icon">😌</span>
+          <span class="e-label">穏やか</span>
+        </button>
+        <button class="emotion-btn" onclick="selectEmotion('tired', '😔', '疲れた', this)">
+          <span class="e-icon">😔</span>
+          <span class="e-label">疲れた</span>
+        </button>
+        <button class="emotion-btn" onclick="selectEmotion('frustrated', '😤', '苛立つ', this)">
+          <span class="e-icon">😤</span>
+          <span class="e-label">苛立つ</span>
+        </button>
+        <button class="emotion-btn" onclick="selectEmotion('anxious', '😰', '不安', this)">
+          <span class="e-icon">😰</span>
+          <span class="e-label">不安</span>
+        </button>
+        <button class="emotion-btn" onclick="selectEmotion('guilty', '😞', '自己嫌悪', this)">
+          <span class="e-icon">😞</span>
+          <span class="e-label">自己嫌悪</span>
+        </button>
+        <button class="emotion-btn" onclick="selectEmotion('happy', '😊', '嬉しい', this)">
+          <span class="e-icon">😊</span>
+          <span class="e-label">嬉しい</span>
+        </button>
+        <button class="emotion-btn" onclick="selectEmotion('overwhelmed', '😵', '限界', this)">
+          <span class="e-icon">😵</span>
+          <span class="e-label">限界</span>
+        </button>
+        <button class="emotion-btn" onclick="selectEmotion('hopeful', '🌱', '前向き', this)">
+          <span class="e-icon">🌱</span>
+          <span class="e-label">前向き</span>
+        </button>
+      </div>
+
+      <div class="checkin-advice" id="checkin-advice"></div>
+
+      <textarea class="note-input" id="checkin-note" placeholder="今日のひと言メモ（省略可）"></textarea>
+
+      <div style="margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="saveCheckin()">💾 記録する</button>
+        <button class="btn btn-ghost" id="reset-btn" onclick="resetEmotion()" style="display:none">やり直す</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📅</span> 最近の記録</div>
+      <div class="record-list" id="record-list">
+        <div class="record-empty">まだ記録がありません。<br>毎日の気持ちを記録してみましょう。</div>
+      </div>
+    </div>
+
+    <!-- 3分間深呼吸 -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🫁</span> 3分間 落ち着きエクサ</div>
+      <p style="font-size:0.85rem;color:var(--ink-soft);margin-bottom:16px;">子どもに関わる前に自分を整えることが最優先です。</p>
+      <div id="breathing-area">
+        <button class="btn btn-primary" onclick="startBreathing()">深呼吸を始める</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ MODULE 4: 知識ベース ══ -->
+  <section id="mod-know" class="module">
+    <div class="section-heading">知識ベース</div>
+    <div class="section-sub">子どもの特性を理解するための基礎知識です。タップして詳しく読めます。</div>
+
+    <div class="knowledge-grid">
+      <div class="knowledge-card" onclick="openModal('asd')">
+        <span class="k-icon">🧩</span>
+        <h4>ASDとは</h4>
+        <p>自閉スペクトラム症の基本的な特性と、日常での現れ方について</p>
+      </div>
+      <div class="knowledge-card" onclick="openModal('adhd')">
+        <span class="k-icon">⚡</span>
+        <h4>ADHDとは</h4>
+        <p>注意欠如・多動性障害の特性と、脳の仕組みから理解する視点</p>
+      </div>
+      <div class="knowledge-card" onclick="openModal('sensory')">
+        <span class="k-icon">🌀</span>
+        <h4>感覚統合とは</h4>
+        <p>感覚刺激を求める行動（走り回るなど）の理由と対処法</p>
+      </div>
+      <div class="knowledge-card" onclick="openModal('praise')">
+        <span class="k-icon">🌟</span>
+        <h4>効果的な褒め方</h4>
+        <p>「よく頑張った」より伝わる褒め方の科学的根拠</p>
+      </div>
+      <div class="knowledge-card" onclick="openModal('anger')">
+        <span class="k-icon">🌊</span>
+        <h4>親の怒りの管理</h4>
+        <p>怒りが生まれる仕組みと、叱責を減らすための実践的な方法</p>
+      </div>
+      <div class="knowledge-card" onclick="openModal('school')">
+        <span class="k-icon">🏫</span>
+        <h4>支援学級との連携</h4>
+        <p>支援学級と普通学級を併用するメリットと家庭でできる連携</p>
+      </div>
+    </div>
+  </section>
+  <!-- ══ MODULE 6: 成長記録 ══ -->
+  <section id="mod-growth" class="module">
+    <div class="section-heading">成長記録</div>
+    <div class="section-sub">「できた！」をためていくタイムライン。小さな変化も全部記録します。</div>
+
+    <div class="growth-stats" id="growth-stats">
+      <div class="growth-stat-card"><div class="growth-stat-num" id="gs-total">0</div><div class="growth-stat-label">総記録数</div></div>
+      <div class="growth-stat-card"><div class="growth-stat-num" id="gs-week">0</div><div class="growth-stat-label">今週</div></div>
+      <div class="growth-stat-card"><div class="growth-stat-num" id="gs-month">0</div><div class="growth-stat-label">今月</div></div>
+      <div class="growth-stat-card"><div class="growth-stat-num" id="gs-streak">0</div><div class="growth-stat-label">連続日数🔥</div></div>
+    </div>
+
+    <div class="diary-form-card">
+      <h3>⭐ できたこと・良かったことを記録</h3>
+      <div class="form-group">
+        <span class="form-label">カテゴリ</span>
+        <div class="growth-cat-tabs">
+          <button class="growth-cat-btn active" onclick="selectGrowthCat(this,'学習')">📚 学習</button>
+          <button class="growth-cat-btn" onclick="selectGrowthCat(this,'社会性')">🤝 社会性</button>
+          <button class="growth-cat-btn" onclick="selectGrowthCat(this,'感覚・身体')">🌀 感覚・身体</button>
+          <button class="growth-cat-btn" onclick="selectGrowthCat(this,'感情')">💛 感情</button>
+          <button class="growth-cat-btn" onclick="selectGrowthCat(this,'生活習慣')">🏠 生活習慣</button>
+          <button class="growth-cat-btn" onclick="selectGrowthCat(this,'兄として')">👦🏻 兄として</button>
+          <button class="growth-cat-btn" onclick="selectGrowthCat(this,'その他')">💬 その他</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <span class="form-label">具体的な行動・できごと</span>
+        <div class="growth-input-row">
+          <textarea id="growth-text" placeholder="例）宿題を泣かずに最後まで終わらせた。弟が転んだとき「大丈夫？」と声をかけた。"></textarea>
+          <button class="btn btn-primary" style="flex-shrink:0;height:70px;padding:0 20px;" onclick="addGrowthRecord()">追加</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📈</span> 成長タイムライン</div>
+      <div class="growth-timeline" id="growth-timeline">
+        <div class="diary-empty"><span class="empty-icon">🌱</span>まだ記録がありません。<br>小さな「できた」から始めましょう。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ MODULE 7: 振り返り・自己許可 ══ -->
+  <section id="mod-reflect" class="module">
+    <div class="section-heading">振り返り・自己許可</div>
+    <div class="section-sub">叱ってしまった後に使うフローです。責めず、学び、前へ進みます。</div>
+
+    <div class="reflect-header">
+      <h3>叱ってしまったとき、ここへ来てください</h3>
+      <p>怒鳴ること、手が出そうになること——それはあなたが弱いのではありません。脳が「危機」に反応しているだけです。5ステップで一緒に整理しましょう。</p>
+    </div>
+
+    <div class="reflect-progress" id="reflect-progress">
+      <div class="reflect-prog-dot current" id="rp0"></div>
+      <div class="reflect-prog-line"></div>
+      <div class="reflect-prog-dot" id="rp1"></div>
+      <div class="reflect-prog-line"></div>
+      <div class="reflect-prog-dot" id="rp2"></div>
+      <div class="reflect-prog-line"></div>
+      <div class="reflect-prog-dot" id="rp3"></div>
+      <div class="reflect-prog-line"></div>
+      <div class="reflect-prog-dot" id="rp4"></div>
+    </div>
+
+    <!-- Step 0: 何が起きた -->
+    <div class="reflect-step active" id="rstep-0">
+      <div class="reflect-card">
+        <h4>🎬 Step 1　何がきっかけでしたか？</h4>
+        <div class="trigger-grid" id="trigger-grid">
+          <button class="trigger-btn" onclick="toggleTrigger(this,'宿題をやらなかった')">📚 宿題をやらなかった</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'何度言っても聞かなかった')">🔁 何度言っても聞かなかった</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'走り回っていた')">🏃 走り回っていた</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'弟とのトラブル')">👦🏻 弟とのトラブル</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'指示が通らなかった')">📢 指示が通らなかった</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'癇癪・パニックが起きた')">🌊 癇癪・パニック</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'疲れていた・余裕がなかった')">😩 自分が疲れていた</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'仕事のストレスがあった')">💼 仕事のストレス</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'その他')">💬 その他</button>
+        </div>
+        <div style="margin-top:14px;">
+          <span class="form-label">補足（省略可）</span>
+          <textarea class="diary-textarea" id="reflect-what" rows="2" placeholder="どんな状況だったか、もう少し詳しく..."></textarea>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="reflectNext(1)">次へ →</button>
+    </div>
+
+    <!-- Step 1: 自分の気持ち -->
+    <div class="reflect-step" id="rstep-1">
+      <div class="reflect-card">
+        <h4>💭 Step 2　そのとき、どんな気持ちでしたか？</h4>
+        <div class="trigger-grid">
+          <button class="trigger-btn" onclick="toggleTrigger(this,'怒り')">😤 怒り</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'焦り')">⏱ 焦り</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'疲労感')">😩 疲労感</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'無力感')">😔 無力感</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'恐怖・不安')">😰 恐怖・不安</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'悲しみ')">😢 悲しみ</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'恥ずかしさ')">😳 恥ずかしさ</button>
+          <button class="trigger-btn" onclick="toggleTrigger(this,'混乱')">😵 混乱</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" style="background:var(--mist);color:var(--ink);" onclick="reflectNext(0)">← 戻る</button>
+        <button class="btn btn-primary" onclick="reflectNext(2)">次へ →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: 脳科学的説明 -->
+    <div class="reflect-step" id="rstep-2">
+      <div class="reflect-card">
+        <h4>🧠 Step 3　なぜそうなったか——脳の仕組み</h4>
+        <div class="science-box">
+          <div class="sci-label">🔬 NEUROSCIENCE</div>
+          <p>怒鳴ったとき、あなたの脳では「扁桃体ハイジャック」が起きていました。子どもの行動が脅威と判断され、扁桃体がアドレナリンを放出。前頭前野（理性的な判断をする部位）が一時的にシャットダウンします。</p>
+          <p style="margin-top:10px;">これは<strong>意志の弱さではなく、哺乳類の脳が持つ生存反応</strong>です。疲労・睡眠不足・ストレスがある状態では、このハイジャックはより起きやすくなります。あなたは壊れていません。</p>
+        </div>
+        <div class="science-box" style="margin-top:12px;background:linear-gradient(135deg,#F0F5F0,#E8F0E8);border-left-color:var(--sage);">
+          <div class="sci-label" style="color:var(--sage-dark);">💡 知っておくこと</div>
+          <p>子どもへの叱責は、短期的には行動を止めることがありますが、長期的には「恐怖で動く」パターンを強化します。一方、<strong>落ち着いた声かけの積み重ねは、子どもの前頭葉の発達そのものを助けます</strong>。今日できなくても、明日またやり直せます。</p>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" style="background:var(--mist);color:var(--ink);" onclick="reflectNext(1)">← 戻る</button>
+        <button class="btn btn-primary" onclick="reflectNext(3)">次へ →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: 自己許可 -->
+    <div class="reflect-step" id="rstep-3">
+      <div class="reflect-card">
+        <h4>💛 Step 4　自分を許す</h4>
+        <div class="permission-box">
+          <span class="perm-icon">🫂</span>
+          <h4>あなたは悪い親ではない</h4>
+          <p>叱ってしまったことを振り返れるのは、それだけ子どもを大切にしているからです。完璧な親はいません。怒鳴ったことより、「どうすればよかったか」を考えられること——それが成長の証です。</p>
+        </div>
+        <div class="affirm-box" style="margin-bottom:0;">
+          <span class="affirm-icon">💛</span>
+          <span>「パパ大好き」と言ってくれる子どもの言葉を思い出してください。その言葉は今日も変わっていません。</span>
+        </div>
+        <div style="margin-top:16px;">
+          <span class="form-label">今の気持ちを一言（省略可）</span>
+          <textarea class="diary-textarea" id="reflect-feeling" rows="2" placeholder="例）反省している。次はもっとゆっくり関わりたい。"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" style="background:var(--mist);color:var(--ink);" onclick="reflectNext(2)">← 戻る</button>
+        <button class="btn btn-primary" onclick="reflectNext(4)">次へ →</button>
+      </div>
+    </div>
+
+    <!-- Step 4: 次の行動 + AI -->
+    <div class="reflect-step" id="rstep-4">
+      <div class="next-action-box" id="reflect-action-box">
+        <h4>✦ 次回、1つだけ試してみること</h4>
+        <div id="reflect-action-text" class="ai-loading"><div class="dot-anim"><span></span><span></span><span></span></div> 考えています...</div>
+      </div>
+      <div class="reflect-card">
+        <h4>🌱 Step 5　記録して完了</h4>
+        <p style="font-size:0.85rem;color:var(--ink-soft);line-height:1.75;margin-bottom:14px;">この振り返りを記録します。積み重ねることで、自分のパターンが見えてきます。</p>
+        <button class="btn btn-primary" onclick="saveReflect()" style="width:100%;justify-content:center;">✅ 振り返りを完了する</button>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card" style="margin-top:24px;">
+      <div class="card-title"><span class="icon">📋</span> 振り返り履歴</div>
+      <div id="reflect-history"></div>
+    </div>
+  </section>
+
+  <!-- ══ MODULE 8: 月次レポート ══ -->
+  <section id="mod-report" class="module">
+    <div class="section-heading">月次レポート</div>
+    <div class="section-sub">1ヶ月の記録をAIが分析し、来月の方針を提案します。</div>
+
+    <div class="report-header-card">
+      <h3>📊 月次レポート生成</h3>
+      <p>日記・成長記録・振り返りのデータをもとに、Claude が分析します。</p>
+      <div class="month-selector">
+        <select class="month-select" id="report-month"></select>
+        <button class="btn" style="background:var(--ochre);color:white;font-size:0.82rem;padding:10px 20px;" onclick="generateReport()">
+          レポートを生成する
+        </button>
+      </div>
+    </div>
+
+    <div id="report-stats-section" style="display:none;">
+      <div class="report-stats-row" id="report-stats-row"></div>
+    </div>
+
+    <div class="report-body" id="report-body">
+      <div class="report-loading">
+        <span class="r-icon">📊</span>
+        月を選んで「レポートを生成する」を押してください。<br>
+        日記・成長記録・振り返りのデータを分析します。
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- KNOWLEDGE MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-box" id="modal-box">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────
+//  DATA
+// ─────────────────────────────────
+
+const GUIDES = {
+  homework: {
+    title: '📚 宿題・勉強をやらないとき',
+    steps: [
+      { text: '<strong>今すぐやらせようとしない。</strong>まず気持ちの余裕を確認します。「ちょっと休んでからやろうか」と声かけするだけでOKです。' },
+      { text: '<strong>場所・姿勢を整える。</strong>机に向かわせる前に、椅子・足台・机の高さを確認。足が浮いていると集中できません。' },
+      { text: '<strong>量を極限まで減らす。</strong>「1問だけ」から始めます。「1問やったら終わり」でいい日もあります。それが継続の種になります。' },
+      { text: '<strong>タイマーをセット。</strong>「5分だけやってみよう」とアナログタイマーを見せます。終わったら全力で褒めます。' },
+      { text: '<strong>隣に座る。</strong>一人でやらせない。声をかけなくても「見ていてくれる人がいる」安心感が集中を助けます。' },
+    ],
+    tip: '<strong>やってはいけないこと：</strong>「なんでやらないの！」「また後回し！」という言葉は逆効果です。責めると脳が「勉強＝苦痛」と学習してしまいます。',
+    affirm: '「宿題を全部完璧にやらせること」が目標ではありません。「机に向かう習慣を育てること」が目標です。今日1問できたなら、それは大きな成功です。'
+  },
+  repeat: {
+    title: '🔁 何度言っても聞かないとき',
+    steps: [
+      { text: '<strong>指示は1回、短く。</strong>「〇〇して」という単一の指示にします。「〇〇して、△△して、□□もね」は情報過多で処理できません。' },
+      { text: '<strong>目線を合わせてから話す。</strong>名前を呼んで→目が合ったのを確認してから→指示を1つだけ。この順番が重要です。' },
+      { text: '<strong>視覚で補う。</strong>言葉だけでなく、ジェスチャー・メモ・絵カードを添えます。聴覚より視覚が処理しやすい子は多いです。' },
+      { text: '<strong>「聞こえてる？」ではなく「繰り返してみて」。</strong>理解できているかを確認するには、子どもに指示を繰り返してもらいます。' },
+      { text: '<strong>できたときに即座に反応する。</strong>指示に従えた瞬間に「ありがとう、動いてくれて嬉しい」と伝えます。このタイミングが学習につながります。' },
+    ],
+    tip: '<strong>何度言っても聞かない理由：</strong>意地悪しているわけではありません。聴覚から記憶への転換が苦手、または集中対象が切り替えられない状態です。怒鳴るほど効果は下がります。',
+    affirm: '同じことを10回言わなければならないのは、あなたが失敗しているのではありません。子どもの脳の特性として、それだけの反復が必要なのです。'
+  },
+  running: {
+    title: '🏃 室内を走り回るとき',
+    steps: [
+      { text: '<strong>まず安全を確保。</strong>危険なものを片付け、怪我しないスペースを確保します。最初は「安全な走り方」を教えることに集中。' },
+      { text: '<strong>感覚の欲求を満たす代替行動を用意。</strong>トランポリン（小型）、クッションへのダイブ、固い床での腕立て伏せ5回など。走ることと似た感覚刺激を安全に提供します。' },
+      { text: '<strong>外に出られるなら出る。</strong>公園・広い場所で30分体を動かすと、その後の落ち着きが全然違います。疲れさせるためではなく、感覚を整えるために。' },
+      { text: '<strong>「走ったら×」ではなく「ここで走ってOK」。</strong>禁止よりも許可エリアを設定します。「廊下はダメ、この部屋でなら跳ねていい」など。' },
+      { text: '<strong>落ち着いたタイミングを逃さず褒める。</strong>座っていられた5分を「5分も座れたね！」と必ず言語化します。' },
+    ],
+    tip: '<strong>走り回る理由：</strong>脳が感覚刺激を必要としているサインです。「悪い子だから」ではなく「前庭感覚・固有受容感覚が不足している状態」です。叱るより感覚を満たす方が効果的。',
+    affirm: '走り回るエネルギーは、将来どこかで必ず強みになります。今は「どこで」「どうやって」発散するかを一緒に探している時期です。'
+  },
+  brother: {
+    title: '👦🏻 弟とのトラブル',
+    steps: [
+      { text: '<strong>まず両方を引き離す。</strong>原因追及は後回し。まず空間を分けて興奮を鎮めます。「どっちが悪い」の判断は落ち着いてから。' },
+      { text: '<strong>お兄ちゃんへの声かけ：気持ちを先に受け取る。</strong>「弟が〇〇したんだね、嫌だったね」と感情を言語化します。行動の前に気持ちを受け取ることが大切。' },
+      { text: '<strong>「お兄ちゃんだから我慢して」は禁止ワード。</strong>年齢差3歳では感情制御の発達差が大きいです。大きい方に我慢を求め続けると関係が崩れます。' },
+      { text: '<strong>兄としての良い行動を見逃さない。</strong>弟に優しくした瞬間、一緒に笑っている場面を見つけて「お兄ちゃんすごいな」と声をかけます。' },
+      { text: '<strong>2人それぞれと一対一の時間を作る。</strong>兄だけと過ごす時間（週1回でも）がトラブル頻度を下げます。「自分だけを見てもらえた」安心感が安定につながります。' },
+    ],
+    tip: '<strong>ポイント：</strong>弟との関係が良好なのは大きな強みです。トラブルは「嫌いだから」ではなく「感情制御が追いつかない」から起きています。長期的な関係の育て方を優先して。',
+    affirm: '弟思いの優しいお兄ちゃんです。トラブルがあっても、その気持ちは消えていません。あなたが見てきた「兄としての行動」を、もっと言葉にして伝えてあげてください。'
+  },
+  instruction: {
+    title: '📢 指示が通らないとき',
+    steps: [
+      { text: '<strong>まず活動を止めさせる。</strong>何かに集中している最中は指示が入りません。「〇〇くん、一回止めて」と活動を先に止めます。' },
+      { text: '<strong>5秒待つ。</strong>指示を出した後、すぐに繰り返さないでください。処理には時間がかかります。5秒〜10秒待つだけで動けることが増えます。' },
+      { text: '<strong>指示を行動レベルまで細かくする。</strong>「片付けて」ではなく「ブロックを青い箱に入れて」。具体的で小さいほど動きやすくなります。' },
+      { text: '<strong>選択肢を与える。</strong>「今やる？5分後にやる？」二択で自分が選んだ感覚を持たせると従いやすくなります。' },
+      { text: '<strong>「やった！」と一緒に確認する。</strong>指示に従えたら「できたね」と完了を一緒に確認します。完結感が次の指示への信頼を育てます。' },
+    ],
+    tip: '<strong>よく起きる誤解：</strong>「返事だけして動かない」のは、やる気がないのではなく「返事=完了」と処理されているか、次の行動への移行が困難な状態です。',
+    affirm: '指示が通らないとき、最も辛いのはあなた自身ですよね。でも繰り返し根気よく関わり続けていること自体が、子どもへの最大の贈り物です。'
+  },
+  meltdown: {
+    title: '🌊 癇癪・パニックが起きたとき',
+    steps: [
+      { text: '<strong>絶対にこの瞬間は論理で話さない。</strong>「なんで泣いてるの」「落ち着いて」という言葉は油に火を注ぎます。まず無言で近くにいるだけでいいです。' },
+      { text: '<strong>安全な場所を確保。</strong>頭を打たない、物が飛んでこないスペースを作ります。弟さんは別の部屋へ。' },
+      { text: '<strong>触れるなら背中に手を置く。</strong>嫌がる場合は触らない。安心できる感触を提供するか、または距離を置きながら「ここにいるよ」と低い声で伝えます。' },
+      { text: '<strong>嵐が過ぎるのを待つ。</strong>癇癪は波があります。ピークを超えれば自然に落ち着いてきます。その後に「辛かったね」と一言。原因の話は翌日以降でOK。' },
+      { text: '<strong>落ち着いたら抱きしめる（嫌がらない場合）。</strong>パニック後のスキンシップは信頼関係を修復します。言葉より先に体で安心を伝えます。' },
+    ],
+    tip: '<strong>大切なこと：</strong>パニック中の子どもは「スイッチが切れた状態」です。前頭葉（理性）が機能停止し、扁桃体（感情）が暴走しています。教育の時間ではなく、共存の時間です。',
+    affirm: 'パニックを止めようとしなくていい。ただそこにいてあげることが、子どもの脳に「パパは逃げない」という安全の記憶を刻みます。それが長い目で見た最大の支援です。'
+  }
+};
+
+const KNOWLEDGE = {
+  asd: {
+    title: '🧩 ASD（自閉スペクトラム症）とは',
+    body: `
+      <p>ASDは「脳の神経発達の違い」によるものであり、病気や欠陥ではありません。社会的なコミュニケーション、感覚処理、こだわりの強さに特徴が現れます。</p>
+      <h5>主な特性</h5>
+      <ul>
+        <li>社会的なやり取り（暗黙のルール、表情読み取り）が難しい</li>
+        <li>特定の物事へのこだわりが強い（変化が苦手）</li>
+        <li>感覚が過敏または鈍感なことがある</li>
+        <li>言葉の文字通りの意味で受け取ることが多い</li>
+        <li>パターン・ルーティンを好む</li>
+      </ul>
+      <h5>お子さんへの当てはめ方</h5>
+      <ul>
+        <li>「こだわりが強い」のは安心できるパターンを求めているサイン</li>
+        <li>「指示が通りにくい」のは言葉の処理速度や優先付けの違いによる</li>
+        <li>「心優しい性格」はASDの特性と矛盾しません。共感は豊かなことが多い</li>
+      </ul>
+      <h5>家庭での基本姿勢</h5>
+      <ul>
+        <li>予告する（「5分後に〇〇するよ」）</li>
+        <li>変化を最小限にする、または十分な準備時間を与える</li>
+        <li>曖昧な言葉を使わない（「ちゃんとして」→「椅子に座って背筋を伸ばして」）</li>
+      </ul>
+    `
+  },
+  adhd: {
+    title: '⚡ ADHD（注意欠如・多動性障害）とは',
+    body: `
+      <p>ADHDは脳のドーパミン（報酬系の神経伝達物質）の機能の違いによって、注意・衝動性・多動性に特徴が現れる神経発達症です。意志が弱いのではありません。</p>
+      <h5>主な特性</h5>
+      <ul>
+        <li>注意の持続が難しい（特に興味のないことに対して）</li>
+        <li>衝動的な行動（考える前に動く）</li>
+        <li>じっとしていることが苦手（体を動かしたい）</li>
+        <li>「今」に強く引きつけられ、将来を見越した行動が難しい</li>
+        <li>興味のあることには驚くほど集中できる（過集中）</li>
+      </ul>
+      <h5>脳の特性として理解する</h5>
+      <ul>
+        <li>即時報酬（今すぐ得られる喜び）に強く反応する</li>
+        <li>「後でいいことがある」より「今これが面白い」が勝つ</li>
+        <li>外からの刺激に注意が向きやすい（気が散りやすい）</li>
+      </ul>
+      <h5>家庭でできること</h5>
+      <ul>
+        <li>即時フィードバック（できたらすぐ褒める）</li>
+        <li>タスクを小さく分解する</li>
+        <li>視覚的な手がかりを活用する</li>
+        <li>適度な運動を日課に（脳のドーパミン分泌に有効）</li>
+      </ul>
+    `
+  },
+  sensory: {
+    title: '🌀 感覚統合とは（走り回る理由）',
+    body: `
+      <p>感覚統合とは、脳が体の内外からの感覚情報を整理・統合する機能です。この機能が発達途上または非定型の場合、特定の感覚を過剰に求めたり、逆に避けたりします。</p>
+      <h5>子どもが求めている主な感覚</h5>
+      <ul>
+        <li><strong>前庭感覚：</strong>動き・スピード・バランス。走ること、回ることで満たされる</li>
+        <li><strong>固有受容感覚：</strong>筋肉・関節からの感覚。押す・引く・跳ぶ・ぶら下がることで満たされる</li>
+        <li><strong>触覚：</strong>皮膚からの情報。素材への強い好みや拒否も感覚の違いから</li>
+      </ul>
+      <h5>室内で走り回る = 感覚飢餓のサイン</h5>
+      <ul>
+        <li>怒って走っているのではなく、脳が感覚を必要としている</li>
+        <li>感覚を満たした後は落ち着きやすくなる</li>
+        <li>止めることより「代替手段」を提供することが有効</li>
+      </ul>
+      <h5>家庭でできる感覚統合活動</h5>
+      <ul>
+        <li>小型トランポリン（前庭・固有受容）</li>
+        <li>壁押し・腕立て（固有受容）</li>
+        <li>重い荷物を運ぶお手伝い（固有受容）</li>
+        <li>クッションへのダイブ（前庭・触覚）</li>
+        <li>公園でのブランコ・ジャングルジム（前庭）</li>
+      </ul>
+    `
+  },
+  praise: {
+    title: '🌟 効果的な褒め方の科学',
+    body: `
+      <p>「よく頑張ったね」「えらいね」という漠然とした褒め言葉は、子どもの動機を育てにくいことが研究で示されています。</p>
+      <h5>効果の高い褒め方：プロセス褒め</h5>
+      <ul>
+        <li><strong>何をしたか</strong>を具体的に言う：「椅子に3分間座れたね」</li>
+        <li><strong>努力・工夫</strong>に注目する：「諦めずに最後までやったね」</li>
+        <li><strong>変化・成長</strong>を伝える：「先週より長く座れるようになったね」</li>
+        <li><strong>親の感情</strong>を添える：「それを見てパパ嬉しかったよ」</li>
+      </ul>
+      <h5>避けたい褒め方</h5>
+      <ul>
+        <li>能力褒め：「頭いいね」「天才だね」→失敗を恐れるようになる</li>
+        <li>比較褒め：「弟より上手だね」→相対的な基準で自己評価するようになる</li>
+        <li>結果だけ褒め：「満点だったね」→過程より結果を重視する思考が育つ</li>
+      </ul>
+      <h5>ASD・ADHD気質の子への特別な配慮</h5>
+      <ul>
+        <li>褒められても反応が薄く見えることがあるが、内側では受け取っている</li>
+        <li>大げさな褒め方（大声・過剰反応）を嫌がる子もいる。落ち着いた声で伝えて</li>
+        <li>時間差で「さっきのあれ、よかったよ」も有効</li>
+      </ul>
+    `
+  },
+  anger: {
+    title: '🌊 親の怒りを管理する',
+    body: `
+      <p>叱責してしまうのは「愛情がないから」ではありません。脳が「脅威反応」を起こしている状態です。この仕組みを理解することが、変化の第一歩です。</p>
+      <h5>怒りが生まれるメカニズム</h5>
+      <ul>
+        <li>子どもの行動→扁桃体が「脅威」と判断→アドレナリン放出→前頭葉（冷静な判断）が機能低下→怒鳴る・手が出る</li>
+        <li>これは「悪い親」ではなく「脅威反応が起きている親」です</li>
+        <li>疲労・睡眠不足・ストレスでこの反応は強くなります</li>
+      </ul>
+      <h5>その場でできること（タイムアウト法）</h5>
+      <ul>
+        <li>怒りを感じたら「1〜10を数える」「その場を離れる」</li>
+        <li>「今すぐ対応しなくていい」と自分に許可を出す</li>
+        <li>水を飲む（物理的に脳を冷ます効果）</li>
+        <li>深呼吸4-7-8法：4秒吸う→7秒止める→8秒で吐く</li>
+      </ul>
+      <h5>叱ってしまった後</h5>
+      <ul>
+        <li>自己嫌悪は必要ですが、長引かせない</li>
+        <li>落ち着いたら子どもに「さっきは怒鳴ってごめんね」と一言伝える</li>
+        <li>謝れる親を見て、子どもも「謝ることは大切」と学びます</li>
+        <li>手が出てしまったときは：専門家への相談を強くお勧めします。あなたが悪い人ではなく、サポートが必要な状態です</li>
+      </ul>
+    `
+  },
+  school: {
+    title: '🏫 支援学級との連携',
+    body: `
+      <p>支援学級と普通学級の併用は、お子さんの可能性を最大化する選択肢です。家庭と学校の連携がその効果を大きく左右します。</p>
+      <h5>支援学級の役割</h5>
+      <ul>
+        <li>個別のペースに合わせた学習支援</li>
+        <li>感情・行動の調整スキルのトレーニング</li>
+        <li>自己理解・自己肯定感の育成</li>
+        <li>普通学級への「橋渡し」訓練</li>
+      </ul>
+      <h5>家庭での連携のポイント</h5>
+      <ul>
+        <li>連絡帳・面談で「今週良かったこと」を必ず共有する</li>
+        <li>学校で学んだスキル（カームダウン方法など）を家でも同じように使う</li>
+        <li>「学校では我慢してる分、家では爆発する」は正常。家が安全基地になっている証拠</li>
+        <li>担任・支援員の「良い関わり方」を教えてもらい、家でも真似する</li>
+      </ul>
+      <h5>保護者として持つべき視点</h5>
+      <ul>
+        <li>支援学級在籍は「遅れ」ではなく「最適な環境の選択」</li>
+        <li>普通学級でのインクルーシブ体験も社会性に大切</li>
+        <li>子どものペースで移行を考える。急かさない</li>
+        <li>将来の進路は多様。今の分類で将来は決まらない</li>
+      </ul>
+    `
+  }
+};
+
+const EMOTION_ADVICE = {
+  calm:        '穏やかな状態ですね。このタイミングが子どもと向き合う最良の時間です。<strong>今日、一つだけ良かった行動を探して伝えてみてください。</strong>',
+  tired:       '疲れているときは無理をしないでください。<strong>「今日はパパ疲れてるから、ゆっくりしよう」と子どもに正直に言っても構いません。</strong>それも正直なコミュニケーションです。',
+  frustrated:  '苛立ちを感じているとき、子どもへの関わりはできるだけ最小限にしましょう。<strong>まず水を飲んで、深呼吸を3回。</strong>感情的なときは「教育」より「安全確保」だけ考えればOKです。',
+  anxious:     '不安な気持ちはあなたが子どもを大切に思っている証拠です。<strong>完璧な親でなくて大丈夫です。</strong>今日一日、子どもが安全でいられれば十分です。',
+  guilty:      '自己嫌悪を感じているのは変わりたいという気持ちの現れです。<strong>叱ってしまったなら、落ち着いてから「さっきはごめんね」と一言。</strong>それだけで十分です。引きずらないでください。',
+  happy:       '良い状態ですね！<strong>この気持ちのまま、子どもの「良いところ探し」をしてみてください。</strong>嬉しいことを一緒に分かち合う時間を作りましょう。',
+  overwhelmed: '今は限界に近い状態です。<strong>今日は最低限のことだけやれれば十分です。</strong>信頼できる人に話を聞いてもらう、または専門家への相談を検討してください。あなたも支えられていい存在です。',
+  hopeful:     '前向きな気持ち、大切にしてください。<strong>何か一つ、今日試してみたい関わり方を選んでみましょう。</strong>小さな変化が積み重なって大きな変化になります。'
+};
+
+// ─────────────────────────────────
+//  STATE
+// ─────────────────────────────────
+let selectedEmotion = null;
+let breathingTimer = null;
+
+// ─────────────────────────────────
+//  MODULE 6: 成長記録
+// ─────────────────────────────────
+let currentGrowthCat = '学習';
+
+function selectGrowthCat(btn, cat) {
+  document.querySelectorAll('.growth-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentGrowthCat = cat;
+}
+
+function addGrowthRecord() {
+  const text = document.getElementById('growth-text').value.trim();
+  if (!text) { alert('内容を入力してください'); return; }
+  const record = {
+    id: Date.now(),
+    cat: currentGrowthCat,
+    text,
+    date: new Date().toISOString()
+  };
+  const records = getGrowthRecords();
+  records.unshift(record);
+  localStorage.setItem('cst_growth', JSON.stringify(records));
+  document.getElementById('growth-text').value = '';
+  renderGrowthTimeline();
+  updateGrowthStats();
+}
+
+function deleteGrowthRecord(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  const records = getGrowthRecords().filter(r => r.id !== id);
+  localStorage.setItem('cst_growth', JSON.stringify(records));
+  renderGrowthTimeline();
+  updateGrowthStats();
+}
+
+function getGrowthRecords() {
+  try { return JSON.parse(localStorage.getItem('cst_growth') || '[]'); } catch { return []; }
+}
+
+function renderGrowthTimeline() {
+  const records = getGrowthRecords();
+  const tl = document.getElementById('growth-timeline');
+  if (!records.length) {
+    tl.innerHTML = '<div class="diary-empty"><span class="empty-icon">🌱</span>まだ記録がありません。<br>小さな「できた」から始めましょう。</div>';
+    return;
+  }
+  tl.innerHTML = records.slice(0, 30).map((r, i) => {
+    const d = new Date(r.date);
+    const ds = `${d.getMonth()+1}/${d.getDate()}`;
+    const isLast = i === Math.min(records.length - 1, 29);
+    return `
+      <div class="growth-item">
+        <div class="growth-dot-col">
+          <div class="growth-dot"></div>
+          ${!isLast ? '<div class="growth-line"></div>' : ''}
+        </div>
+        <div class="growth-content">
+          <div class="growth-meta">
+            <span class="growth-date">${ds}</span>
+            <span class="growth-cat-badge">${r.cat}</span>
+            <button class="growth-delete" onclick="deleteGrowthRecord(${r.id})">✕</button>
+          </div>
+          <div class="growth-text">${r.text}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateGrowthStats() {
+  const records = getGrowthRecords();
+  const now = new Date();
+  const weekAgo = new Date(now - 7*864e5);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  document.getElementById('gs-total').textContent = records.length;
+  document.getElementById('gs-week').textContent = records.filter(r => new Date(r.date) >= weekAgo).length;
+  document.getElementById('gs-month').textContent = records.filter(r => new Date(r.date) >= monthStart).length;
+
+  // streak
+  let streak = 0;
+  let check = new Date(now); check.setHours(0,0,0,0);
+  for (let i = 0; i < 30; i++) {
+    if (records.some(r => { const d = new Date(r.date); d.setHours(0,0,0,0); return d.getTime() === check.getTime(); })) {
+      streak++; check.setDate(check.getDate()-1);
+    } else break;
+  }
+  document.getElementById('gs-streak').textContent = streak;
+}
+
+// ─────────────────────────────────
+//  MODULE 7: 振り返り・自己許可
+// ─────────────────────────────────
+let reflectStep = 0;
+let reflectTriggers = [];
+
+function toggleTrigger(btn, label) {
+  btn.classList.toggle('active');
+  if (btn.classList.contains('active')) {
+    if (!reflectTriggers.includes(label)) reflectTriggers.push(label);
+  } else {
+    reflectTriggers = reflectTriggers.filter(t => t !== label);
+  }
+}
+
+function reflectNext(step) {
+  // Hide all
+  document.querySelectorAll('.reflect-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('rstep-' + step).classList.add('active');
+  reflectStep = step;
+
+  // Update progress dots
+  for (let i = 0; i < 5; i++) {
+    const dot = document.getElementById('rp' + i);
+    dot.classList.remove('done', 'current');
+    if (i < step) dot.classList.add('done');
+    if (i === step) dot.classList.add('current');
+  }
+
+  // Step 4: generate action with AI or fallback
+  if (step === 4) generateReflectAction();
+
+  window.scrollTo({ top: document.getElementById('mod-reflect').offsetTop - 120, behavior: 'smooth' });
+}
+
+const REFLECT_FALLBACKS = [
+  '次に同じ場面になったら、まず「1・2・3」と心の中で数えてから声をかけてみてください。その0.5秒が感情の温度を下げます。',
+  '「やめて」ではなく「〇〇してほしい」という言い方に変えてみましょう。禁止より依頼の方が、子どもの脳には届きやすいです。',
+  '叱る前に子どもの隣に座ってみてください。物理的に目線を合わせると、声のトーンが自然に穏やかになります。',
+  '次回は「今日は疲れているから、5分だけ待って」と子どもに正直に伝えてみてください。それも大切なコミュニケーションです。',
+];
+
+async function generateReflectAction() {
+  const actionEl = document.getElementById('reflect-action-text');
+  const apiKey = getApiKey();
+  const triggers = reflectTriggers.join('、') || '特定のきっかけ';
+  const what = document.getElementById('reflect-what').value.trim();
+
+  if (!apiKey) {
+    await new Promise(r => setTimeout(r, 800));
+    const fb = REFLECT_FALLBACKS[Math.floor(Math.random() * REFLECT_FALLBACKS.length)];
+    actionEl.innerHTML = `<p style="font-size:0.87rem;line-height:1.85;opacity:0.9;">${fb}</p>`;
+    return;
+  }
+
+  try {
+    const prompt = `ASD・ADHD気質（8歳男児）の父親が叱ってしまった場面を振り返っています。
+きっかけ：${triggers}
+状況の補足：${what || 'なし'}
+
+この状況に対して、次回同じ場面になったとき「これだけやってみよう」と思える具体的な代替行動を1つ、80字以内で提案してください。
+難しくなく、今日から実践できる小さなものにしてください。余計な前置きなしで直接提案文を書いてください。`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 200, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || REFLECT_FALLBACKS[0];
+    actionEl.innerHTML = `<p style="font-size:0.87rem;line-height:1.85;opacity:0.9;">${text}</p>`;
+  } catch {
+    actionEl.innerHTML = `<p style="font-size:0.87rem;line-height:1.85;opacity:0.9;">${REFLECT_FALLBACKS[0]}</p>`;
+  }
+}
+
+function saveReflect() {
+  const what = document.getElementById('reflect-what').value.trim();
+  const feeling = document.getElementById('reflect-feeling').value.trim();
+  const actionText = document.getElementById('reflect-action-text').textContent.trim();
+  const record = {
+    id: Date.now(),
+    triggers: [...reflectTriggers],
+    what, feeling,
+    nextAction: actionText,
+    date: new Date().toISOString()
+  };
+  const records = getReflectRecords();
+  records.unshift(record);
+  if (records.length > 50) records.pop();
+  localStorage.setItem('cst_reflect', JSON.stringify(records));
+
+  // Reset
+  reflectTriggers = [];
+  document.querySelectorAll('.trigger-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('reflect-what').value = '';
+  document.getElementById('reflect-feeling').value = '';
+  reflectNext(0);
+  renderReflectHistory();
+  alert('振り返りを記録しました。お疲れ様でした。');
+}
+
+function getReflectRecords() {
+  try { return JSON.parse(localStorage.getItem('cst_reflect') || '[]'); } catch { return []; }
+}
+
+function renderReflectHistory() {
+  const records = getReflectRecords();
+  const el = document.getElementById('reflect-history');
+  if (!records.length) {
+    el.innerHTML = '<div class="record-empty">まだ記録がありません。</div>';
+    return;
+  }
+  el.innerHTML = records.slice(0, 10).map(r => {
+    const d = new Date(r.date);
+    const ds = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+    const triggers = (r.triggers || []).join('、') || 'きっかけ不明';
+    return `
+      <div class="reflect-history-item">
+        <div class="reflect-history-date">${ds} ／ ${triggers}</div>
+        <div class="reflect-history-text">
+          ${r.nextAction ? `💡 次の一手：${r.nextAction}` : ''}
+          ${r.feeling ? `<br>気持ち：${r.feeling}` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────
+//  MODULE 8: 月次レポート
+// ─────────────────────────────────
+function initReportMonthSelect() {
+  const sel = document.getElementById('report-month');
+  const now = new Date();
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const label = `${d.getFullYear()}年${d.getMonth()+1}月`;
+    const opt = document.createElement('option');
+    opt.value = val; opt.textContent = label;
+    sel.appendChild(opt);
+  }
+}
+
+function getMonthData(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  const start = new Date(y, m-1, 1);
+  const end   = new Date(y, m, 1);
+  const inRange = d => { const dt = new Date(d); return dt >= start && dt < end; };
+
+  const diaries  = getDiaryEntries().filter(r => inRange(r.createdAt || r.date));
+  const growths  = getGrowthRecords().filter(r => inRange(r.date));
+  const reflects = getReflectRecords().filter(r => inRange(r.date));
+
+  return { diaries, growths, reflects };
+}
+
+async function generateReport() {
+  const ym = document.getElementById('report-month').value;
+  const { diaries, growths, reflects } = getMonthData(ym);
+  const [y, m] = ym.split('-').map(Number);
+  const label = `${y}年${m}月`;
+
+  // Stats
+  const statsSection = document.getElementById('report-stats-section');
+  const statsRow = document.getElementById('report-stats-row');
+  statsSection.style.display = 'block';
+  const scoldedCount = diaries.filter(d => d.scolded).length;
+  statsRow.innerHTML = `
+    <div class="report-stat"><div class="rs-num">${diaries.length}</div><div class="rs-label">日記記録数</div></div>
+    <div class="report-stat"><div class="rs-num">${growths.length}</div><div class="rs-label">成長記録数</div></div>
+    <div class="report-stat"><div class="rs-num">${reflects.length}</div><div class="rs-label">振り返り数</div></div>
+    <div class="report-stat"><div class="rs-num">${scoldedCount}</div><div class="rs-label">叱った日数</div></div>
+  `;
+
+  const body = document.getElementById('report-body');
+  body.classList.add('visible');
+  body.innerHTML = `<div class="report-loading"><span class="r-icon">⏳</span>AIが${label}のデータを分析しています...<br><div class="dot-anim" style="justify-content:center;display:flex;margin-top:8px;"><span></span><span></span><span></span></div></div>`;
+
+  if (!diaries.length && !growths.length && !reflects.length) {
+    body.innerHTML = `<div class="report-loading"><span class="r-icon">📭</span>${label}のデータがありません。<br>日記・成長記録・振り返りを記録してからご利用ください。</div>`;
+    return;
+  }
+
+  const diarySum = diaries.map(d =>
+    `[${d.date}] 場面:${(d.tags||[]).join(',')||'なし'} 子:${d.child||''} 自分:${d.self||''} 叱:${d.scolded?'はい':'いいえ'} コンディション:${d.mood||5}`
+  ).join('\n');
+  const growthSum = growths.map(g => `[${new Date(g.date).toLocaleDateString('ja')}] ${g.cat}：${g.text}`).join('\n');
+  const reflectSum = reflects.map(r => `[${new Date(r.date).toLocaleDateString('ja')}] きっかけ:${(r.triggers||[]).join(',')} 次の一手:${r.nextAction||''}`).join('\n');
+
+  const prompt = `あなたはASD・ADHD気質（8歳男児）の父親をサポートする児童発達支援の専門コーチです。
+以下は${label}の父親の記録です。
+
+【日記（${diaries.length}件）】
+${diarySum || 'なし'}
+
+【成長記録（${growths.length}件）】
+${growthSum || 'なし'}
+
+【振り返り記録（${reflects.length}件）】
+${reflectSum || 'なし'}
+
+以下の4セクションで月次レポートを作成してください。各セクションは200字以内。
+見出しは「【今月のサマリー】」「【成長が見られた点】」「【繰り返し起きている困難】」「【来月の重点課題3つ】」の形式で。
+父親を責めず、温かく、具体的に。来月の課題は番号付きリストで。`;
+
+  const apiKey = getApiKey();
+
+  try {
+    let reportText = '';
+    if (apiKey) {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1200, messages: [{ role: 'user', content: prompt }] })
+      });
+      const data = await res.json();
+      reportText = data.content?.[0]?.text || '';
+    } else {
+      await new Promise(r => setTimeout(r, 1500));
+      reportText = `【今月のサマリー】\n${label}は記録${diaries.length}件、成長記録${growths.length}件が蓄積されました。日々の記録を続けていることそのものが、関わり方を振り返る大切な習慣になっています。\n\n【成長が見られた点】\n記録の中に「できた」という言葉が見られます。小さな成功体験を見つけ、言語化できるようになってきています。\n\n【繰り返し起きている困難】\nAPIキーを設定すると、実際のデータから繰り返しパターンを分析したレポートが生成されます。\n\n【来月の重点課題3つ】\n1. 毎日1つ「できた」を記録し続ける\n2. 叱ってしまった翌日に振り返りフローを使う\n3. 週1回、子どもと一対一の時間（15分）を作る`;
+    }
+    renderReport(label, reportText);
+  } catch (err) {
+    body.innerHTML = `<div class="report-loading"><span class="r-icon">⚠️</span>エラーが発生しました。<br>${err.message}</div>`;
+  }
+}
+
+function renderReport(label, text) {
+  const body = document.getElementById('report-body');
+  // Parse sections
+  const sections = [
+    { key: '今月のサマリー', icon: '📋', color: 'var(--sage-dark)' },
+    { key: '成長が見られた点', icon: '🌱', color: 'var(--ochre)' },
+    { key: '繰り返し起きている困難', icon: '🔄', color: 'var(--terra)' },
+    { key: '来月の重点課題', icon: '🎯', color: 'var(--sage)' },
+  ];
+
+  let html = `<div style="font-family:var(--font-serif);font-size:1.1rem;color:var(--sage-dark);font-weight:700;margin-bottom:16px;">${label}のレポート</div>`;
+
+  sections.forEach(sec => {
+    const regex = new RegExp(`【${sec.key}[^】]*】([\\s\\S]*?)(?=【|$)`, 'i');
+    const match = text.match(regex);
+    const content = match ? match[1].trim() : '';
+    if (!content) return;
+
+    // Format numbered list for 課題
+    let formatted = content;
+    if (sec.key.includes('課題')) {
+      const items = content.split(/\n/).filter(l => l.trim().match(/^[1-9１-９]/));
+      if (items.length) {
+        formatted = `<ul class="priority-list">${items.map((item, i) =>
+          `<li class="priority-item"><div class="priority-num">${i+1}</div><div class="priority-text">${item.replace(/^[1-9１-９][\.\．、]\s*/, '')}</div></li>`
+        ).join('')}</ul>`;
+      }
+    } else {
+      formatted = content.replace(/\n/g, '<br>');
+    }
+
+    html += `
+      <div class="report-section">
+        <div class="report-section-title" style="color:${sec.color};">${sec.icon} ${sec.key}</div>
+        <div class="report-text">${formatted}</div>
+      </div>`;
+  });
+
+  html += `
+    <div style="text-align:center;padding:20px 0;font-size:0.8rem;color:var(--bark-light);">
+      レポート生成日：${new Date().toLocaleDateString('ja-JP')}
+    </div>`;
+
+  body.innerHTML = html;
+}
+
+// ─────────────────────────────────
+//  API KEY
+// ─────────────────────────────────
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key.startsWith('sk-ant-')) { alert('正しいAPIキー形式ではありません（sk-ant-で始まります）'); return; }
+  localStorage.setItem('cst_apikey', key);
+  document.getElementById('api-key-input').value = '';
+  updateApiStatus();
+}
+function getApiKey() { return localStorage.getItem('cst_apikey') || ''; }
+function updateApiStatus() {
+  const key = getApiKey();
+  const banner = document.getElementById('api-banner');
+  const done   = document.getElementById('api-set-done');
+  if (key) {
+    done.style.display = 'block';
+    banner.style.borderColor = 'var(--sage-light)';
+    banner.style.background  = '#EEF5EE';
+  } else {
+    done.style.display = 'none';
+  }
+}
+
+// ─────────────────────────────────
+//  DIARY STATE
+// ─────────────────────────────────
+let diarySelectedTags = [];
+let diaryScolded = null;
+
+function toggleTag(btn, key) {
+  const isWarn = ['meltdown','repeat','running','brother','instruction'].includes(key);
+  if (btn.classList.contains('active') || btn.classList.contains('active-warn')) {
+    btn.classList.remove('active','active-warn');
+    diarySelectedTags = diarySelectedTags.filter(t => t !== key);
+  } else {
+    btn.classList.add(isWarn ? 'active-warn' : 'active');
+    diarySelectedTags.push(key);
+  }
+}
+
+function toggleScolded(val) {
+  diaryScolded = val;
+  document.getElementById('toggle-yes').className = 'toggle-btn' + (val === true  ? ' active-yes' : '');
+  document.getElementById('toggle-no').className  = 'toggle-btn' + (val === false ? ' active-no'  : '');
+}
+
+const MOOD_EMOJIS = ['','😤','😩','😔','😟','😐','🙂','😊','😄','🌟','🥰'];
+function updateMoodLabel(v) {
+  document.getElementById('mood-emoji').textContent = MOOD_EMOJIS[parseInt(v)] || '😐';
+}
+
+// ─────────────────────────────────
+//  DIARY SUBMIT + CLAUDE API
+// ─────────────────────────────────
+async function submitDiary() {
+  const child = document.getElementById('diary-child').value.trim();
+  const self  = document.getElementById('diary-self').value.trim();
+  const date  = document.getElementById('diary-date').value;
+  const mood  = document.getElementById('mood-slider').value;
+
+  if (!child && !self) { alert('子どもの様子か自分の関わり方を入力してください。'); return; }
+
+  const btn = document.getElementById('diary-submit-btn');
+  const panel = document.getElementById('diary-ai-panel');
+  const aiText = document.getElementById('diary-ai-text');
+
+  // Show loading
+  panel.classList.add('visible');
+  aiText.innerHTML = `<div class="ai-loading"><div class="dot-anim"><span></span><span></span><span></span></div> AIが読んでいます...</div>`;
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+
+  const tagLabels = {homework:'宿題・勉強',repeat:'何度も指示',running:'走り回り',
+    brother:'弟トラブル',instruction:'指示が通らない',meltdown:'癇癪・パニック',
+    good:'良いできごと',school:'学校のこと',other:'その他'};
+  const tags = diarySelectedTags.map(t => tagLabels[t] || t).join('、') || 'なし';
+
+  const prompt = `あなたは児童発達支援の専門家であり、ASD・ADHD気質（8歳男児）を持つ子どもの父親をサポートするコーチです。
+父親のプロフィール：叱責しがちだが子どもへの愛情は強い。自分自身の成長を望んでいる。最終目標は適切な関わり方を学ぶこと。
+子どもの特性：ASD・ADHD気質、こだわりが強い、感覚刺激を求める、心優しい性格、3歳下の弟あり。
+
+以下は今日の父親の日記です。
+
+【場面タグ】${tags}
+【子どもの様子】${child || '（未記入）'}
+【自分の関わり方】${self || '（未記入）'}
+【叱った？】${diaryScolded === true ? 'はい' : diaryScolded === false ? 'いいえ' : '未回答'}
+【今日のコンディション（1=最悪、10=最高）】${mood}
+
+以下の形式でワンポイントアドバイスを返してください。300字以内で。
+・まず記録を労う一言（責めない・温かく）
+・今日の場面に対する具体的な行動ヒント1つ（次回使えるもの）
+・締めに父親自身への短い励まし
+
+余計な前置き・見出し・箇条書き記号は使わず、自然な文章で返してください。`;
+
+  const apiKey = getApiKey();
+
+  try {
+    let adviceText = '';
+
+    if (apiKey) {
+      // Real Claude API call
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 600,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      if (!res.ok) throw new Error('API Error: ' + res.status);
+      const data = await res.json();
+      adviceText = data.content?.[0]?.text || 'アドバイスを取得できませんでした。';
+    } else {
+      // Demo fallback
+      await new Promise(r => setTimeout(r, 1500));
+      adviceText = '今日もしっかり記録してくれてありがとうございます。記録すること自体が、関わりを振り返る大切な習慣です。\n\n次回同じ場面になったら、まず深呼吸を1回してから声をかけてみてください。0.5秒の間が、言葉の温度を変えます。\n\n毎日向き合い続けているあなたの姿勢が、お子さんの安心感を育てています。焦らず、今日のあなたで十分です。\n\n※ APIキーを設定するとClaudeからの本物のアドバイスが届きます。';
+    }
+
+    // Format and display
+    const formatted = adviceText.replace(/\n/g, '<br>');
+    aiText.innerHTML = formatted;
+
+    // Save entry
+    const entry = {
+      id: Date.now(),
+      date: date || new Date().toISOString().slice(0,10),
+      tags: [...diarySelectedTags],
+      child, self,
+      scolded: diaryScolded,
+      mood: parseInt(mood),
+      advice: adviceText,
+      createdAt: new Date().toISOString()
+    };
+    saveDiaryEntry(entry);
+    renderDiaryList();
+    resetDiaryForm();
+
+  } catch(err) {
+    aiText.innerHTML = `<span style="color:#FFB3A0;">エラーが発生しました: ${err.message}<br>APIキーを確認してください。</span>`;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '💾 記録してAIアドバイスをもらう';
+}
+
+function resetDiaryForm() {
+  document.getElementById('diary-child').value = '';
+  document.getElementById('diary-self').value  = '';
+  document.getElementById('mood-slider').value = 5;
+  document.getElementById('mood-emoji').textContent = '😐';
+  diarySelectedTags = [];
+  diaryScolded = null;
+  document.querySelectorAll('.tag-select-btn').forEach(b => b.classList.remove('active','active-warn'));
+  document.getElementById('toggle-yes').className = 'toggle-btn';
+  document.getElementById('toggle-no').className  = 'toggle-btn';
+}
+
+// ─────────────────────────────────
+//  DIARY STORAGE
+// ─────────────────────────────────
+function saveDiaryEntry(entry) {
+  const entries = getDiaryEntries();
+  entries.unshift(entry);
+  if (entries.length > 90) entries.pop();
+  localStorage.setItem('cst_diary', JSON.stringify(entries));
+}
+function getDiaryEntries() {
+  try { return JSON.parse(localStorage.getItem('cst_diary') || '[]'); } catch { return []; }
+}
+
+const TAG_LABELS = {
+  homework:'📚 宿題',repeat:'🔁 繰り返し',running:'🏃 走り回り',
+  brother:'👦🏻 弟',instruction:'📢 指示',meltdown:'🌊 癇癪',
+  good:'⭐ 良い',school:'🏫 学校',other:'💬 その他'
+};
+
+function renderDiaryList() {
+  const entries = getDiaryEntries();
+  const list = document.getElementById('diary-list');
+  if (!entries.length) {
+    list.innerHTML = `<div class="diary-empty"><span class="empty-icon">📔</span>まだ日記がありません。<br>今日のできごとを書いてみましょう。</div>`;
+    return;
+  }
+  list.innerHTML = entries.slice(0, 20).map(e => {
+    const moodEmoji = MOOD_EMOJIS[e.mood] || '😐';
+    const tagsHTML = (e.tags || []).map(t => `<span class="diary-tag">${TAG_LABELS[t]||t}</span>`).join('');
+    const scoldedBadge = e.scolded ? '<span class="diary-tag" style="background:var(--terra-pale);border-color:var(--terra-light);color:var(--terra);">😞 叱った</span>' : '';
+    return `
+      <div class="diary-entry ${e.scolded ? 'has-scolded' : ''}">
+        <div class="diary-entry-header">
+          <span class="diary-entry-mood">${moodEmoji}</span>
+          <span class="diary-entry-date">${e.date}</span>
+          ${tagsHTML}
+          ${scoldedBadge}
+        </div>
+        ${e.child ? `<div class="diary-entry-body">👦 ${e.child}</div>` : ''}
+        ${e.self  ? `<div class="diary-entry-body" style="margin-top:-6px;">🪞 ${e.self}</div>`  : ''}
+        ${e.advice ? `
+          <div class="diary-entry-advice">
+            <div class="advice-label">✦ AI アドバイス</div>
+            ${e.advice.replace(/\n/g,'<br>')}
+          </div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ─────────────────────────────────
+//  MODULE NAV (updated)
+// ─────────────────────────────────
+function showModule(name) {
+  document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('mod-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ─────────────────────────────────
+//  MODULE 1: SCENE GUIDES
+// ─────────────────────────────────
+function showGuide(key, btn) {
+  document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const g = GUIDES[key];
+  const panel = document.getElementById('guide-panel');
+  const stepsHTML = g.steps.map((s, i) => `
+    <li class="step-item">
+      <div class="step-num">${i+1}</div>
+      <div class="step-text">${s.text}</div>
+    </li>
+  `).join('');
+
+  panel.innerHTML = `
+    <div class="guide-panel-title">🌿 ${g.title}</div>
+    <ul class="step-list">${stepsHTML}</ul>
+    <div class="tip-box">⚠️ ${g.tip}</div>
+    <div class="affirm-box">
+      <span class="affirm-icon">💛</span>
+      <span>${g.affirm}</span>
+    </div>
+  `;
+  panel.classList.add('visible');
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─────────────────────────────────
+//  MODULE 2: LEARNING
+// ─────────────────────────────────
+function showSubject(key, btn) {
+  document.querySelectorAll('.subject-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.subject-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sub-' + key).classList.add('active');
+}
+
+// ─────────────────────────────────
+//  MODULE 3: SELF CHECK
+// ─────────────────────────────────
+function selectEmotion(key, icon, label, btn) {
+  selectedEmotion = { key, icon, label };
+  document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const advice = document.getElementById('checkin-advice');
+  advice.innerHTML = EMOTION_ADVICE[key];
+  advice.classList.add('visible');
+  document.getElementById('reset-btn').style.display = 'flex';
+}
+
+function resetEmotion() {
+  selectedEmotion = null;
+  document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('checkin-advice').classList.remove('visible');
+  document.getElementById('reset-btn').style.display = 'none';
+  document.getElementById('checkin-note').value = '';
+}
+
+function saveCheckin() {
+  if (!selectedEmotion) {
+    alert('気持ちを選んでから記録してください。');
+    return;
+  }
+  const note = document.getElementById('checkin-note').value.trim();
+  const record = {
+    emotion: selectedEmotion,
+    note: note,
+    date: new Date().toISOString()
+  };
+  const records = getRecords();
+  records.unshift(record);
+  if (records.length > 30) records.pop();
+  localStorage.setItem('cst_records', JSON.stringify(records));
+  updateStreak();
+  renderRecords();
+  resetEmotion();
+
+  // Feedback
+  const btn = document.querySelector('.btn-primary');
+  btn.textContent = '✓ 記録しました';
+  setTimeout(() => { btn.innerHTML = '💾 記録する'; }, 2000);
+}
+
+function getRecords() {
+  try { return JSON.parse(localStorage.getItem('cst_records') || '[]'); } catch { return []; }
+}
+
+function renderRecords() {
+  const records = getRecords();
+  const list = document.getElementById('record-list');
+  if (!records.length) {
+    list.innerHTML = '<div class="record-empty">まだ記録がありません。<br>毎日の気持ちを記録してみましょう。</div>';
+    return;
+  }
+  list.innerHTML = records.slice(0, 7).map(r => {
+    const d = new Date(r.date);
+    const dateStr = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `
+      <div class="record-item">
+        <div class="record-emotion">${r.emotion.icon}</div>
+        <div class="record-info">
+          <div class="record-date">${dateStr}</div>
+          <div class="record-note">${r.emotion.label}${r.note ? ' — ' + r.note : ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateStreak() {
+  const records = getRecords();
+  if (!records.length) { renderStreak(0); return; }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  let streak = 0;
+  let checkDate = new Date(today);
+
+  for (let i = 0; i < 14; i++) {
+    const found = records.some(r => {
+      const rd = new Date(r.date); rd.setHours(0,0,0,0);
+      return rd.getTime() === checkDate.getTime();
+    });
+    if (found) { streak++; checkDate.setDate(checkDate.getDate() - 1); }
+    else break;
+  }
+  renderStreak(streak);
+}
+
+function renderStreak(n) {
+  document.getElementById('streak-num').textContent = n;
+  const dots = document.getElementById('streak-dots');
+  dots.innerHTML = Array.from({length: 7}, (_, i) => 
+    `<div class="streak-dot ${i < n ? 'filled' : ''}"></div>`
+  ).join('');
+}
+
+// ─────────────────────────────────
+//  BREATHING EXERCISE
+// ─────────────────────────────────
+function startBreathing() {
+  const area = document.getElementById('breathing-area');
+  const phases = [
+    { text: '息を吸って...', duration: 4000, color: '#5C7A5F' },
+    { text: '止めて...', duration: 4000, color: '#C89A3E' },
+    { text: 'ゆっくり吐いて...', duration: 8000, color: '#3D5740' },
+    { text: 'また吸って...', duration: 4000, color: '#5C7A5F' },
+  ];
+  let cycle = 0, phaseIdx = 0, total = 6;
+
+  function render(phase) {
+    area.innerHTML = `
+      <div style="text-align:center;padding:20px 0;">
+        <div style="width:90px;height:90px;border-radius:50%;background:${phase.color};margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;animation:breathPulse 1s ease-in-out infinite;box-shadow:0 0 24px ${phase.color}44;">🫁</div>
+        <div style="font-family:var(--font-serif);font-size:1.2rem;color:var(--sage-dark);font-weight:700;margin-bottom:8px;">${phase.text}</div>
+        <div style="font-size:0.8rem;color:var(--bark-light);">残り ${total - Math.floor(cycle/phases.length)} サイクル</div>
+      </div>
+    `;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = '@keyframes breathPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }';
+  document.head.appendChild(style);
+
+  function next() {
+    if (cycle >= total * phases.length) {
+      area.innerHTML = `
+        <div style="text-align:center;padding:16px 0;">
+          <div style="font-size:2rem;margin-bottom:10px;">✅</div>
+          <div style="font-family:var(--font-serif);color:var(--sage-dark);font-weight:700;margin-bottom:12px;">お疲れ様でした</div>
+          <p style="font-size:0.82rem;color:var(--bark-light);margin-bottom:16px;">少し落ち着きましたか？</p>
+          <button class="btn btn-primary" onclick="startBreathing()">もう一度</button>
+        </div>
+      `;
+      return;
+    }
+    const phase = phases[phaseIdx % phases.length];
+    render(phase);
+    phaseIdx++;
+    cycle++;
+    breathingTimer = setTimeout(next, phase.duration);
+  }
+  next();
+}
+
+// ─────────────────────────────────
+//  MODULE 4: KNOWLEDGE MODAL
+// ─────────────────────────────────
+function openModal(key) {
+  const k = KNOWLEDGE[key];
+  document.getElementById('modal-title').textContent = k.title;
+  document.getElementById('modal-body').innerHTML = k.body;
+  document.getElementById('modal-overlay').classList.add('visible');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('visible');
+}
+
+// ─────────────────────────────────
+//  INIT
+// ─────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Diary
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('diary-date').value = today;
+  updateApiStatus();
+  renderDiaryList();
+  updateMoodLabel(5);
+  // Growth
+  renderGrowthTimeline();
+  updateGrowthStats();
+  // Reflect
+  renderReflectHistory();
+  // Report
+  initReportMonthSelect();
+  // Self-check
+  renderRecords();
+  updateStreak();
+});
+</script>
+</body>
+</html>
