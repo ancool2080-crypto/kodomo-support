@@ -1442,10 +1442,292 @@
 </head>
 <body>
 
-<!-- Firebase -->
-<script type="module" src="firebase.js"></script>
+<!-- Firebase SDK (CDN) -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  signOut, onAuthStateChanged, updateProfile
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import {
+  getFirestore, collection, doc, setDoc, getDoc, getDocs,
+  addDoc, onSnapshot, query, orderBy, limit, serverTimestamp, where
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyDF0hJH8ZMbVR9U7M2oJB_Vjo4Hv2UkeWo",
+  authDomain:        "aroha-21441.firebaseapp.com",
+  projectId:         "aroha-21441",
+  storageBucket:     "aroha-21441.firebasestorage.app",
+  messagingSenderId: "880482104016",
+  appId:             "1:880482104016:web:f0f8ba3342dd3f21c1e4d5"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+window.arohaDB = { user:null, familyId:null, role:null, roleLabel:null, unsubscribers:[] };
+const ROLE_LABELS = { papa:'👨 パパ', mama:'👩 ママ', other:'👤 その他' };
+
+// ── 認証状態監視 ──────────────────────
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    window.arohaDB.user = user;
+    await loadFamilyContext(user.uid);
+    showApp();
+  } else {
+    window.arohaDB = { user:null, familyId:null, role:null, roleLabel:null, unsubscribers:[] };
+    showAuthScreen();
+  }
+});
+
+// ── UI切替 ────────────────────────────
+function showAuthScreen() {
+  document.getElementById('aroha-loading').style.display = 'none';
+  document.getElementById('aroha-auth').style.display = 'flex';
+  document.getElementById('aroha-app').style.display  = 'none';
+}
+function showApp() {
+  document.getElementById('aroha-loading').style.display = 'none';
+  document.getElementById('aroha-auth').style.display = 'none';
+  document.getElementById('aroha-app').style.display  = 'block';
+  const badge = document.getElementById('user-badge');
+  if (badge) badge.textContent = `${window.arohaDB.roleLabel||''} ${window.arohaDB.user?.displayName||''}`;
+  startRealtimeListeners();
+}
+
+// ── 認証 ─────────────────────────────
+window.firebaseSignUp = async (email, password, name, role, inviteCode) => {
+  try {
+    setAuthLoading(true);
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(cred.user, { displayName: name });
+    if (inviteCode && inviteCode.trim()) {
+      await joinFamily(cred.user.uid, inviteCode.trim(), name, role);
+    } else {
+      await createFamily(cred.user.uid, name, role);
+    }
+    setAuthLoading(false);
+  } catch(err) {
+    setAuthLoading(false);
+    showAuthError(err.code || err.message);
+  }
+};
+
+window.firebaseSignIn = async (email, password) => {
+  try {
+    setAuthLoading(true);
+    await signInWithEmailAndPassword(auth, email, password);
+    setAuthLoading(false);
+  } catch(err) {
+    setAuthLoading(false);
+    showAuthError(err.code || err.message);
+  }
+};
+
+window.firebaseSignOut = async () => {
+  window.arohaDB.unsubscribers.forEach(fn => fn());
+  window.arohaDB.unsubscribers = [];
+  localStorage.removeItem('aroha_family_id');
+  await signOut(auth);
+};
+
+function setAuthLoading(v) {
+  const btn = document.getElementById('auth-submit-btn');
+  if (!btn) return;
+  btn.disabled = v;
+  btn.textContent = v ? '処理中…' : (window._authMode === 'login' ? 'ログイン' : '登録する');
+}
+
+function showAuthError(code) {
+  const map = {
+    'auth/email-already-in-use':  'このメールアドレスはすでに使用されています',
+    'auth/invalid-email':         'メールアドレスの形式が正しくありません',
+    'auth/weak-password':         'パスワードは6文字以上にしてください',
+    'auth/user-not-found':        'アカウントが見つかりません',
+    'auth/wrong-password':        'パスワードが間違っています',
+    'auth/invalid-credential':    'メールアドレスまたはパスワードが間違っています',
+    'auth/too-many-requests':     'しばらくしてからもう一度お試しください',
+  };
+  const el = document.getElementById('auth-error');
+  if (el) { el.textContent = map[code] || `エラー: ${code}`; el.style.display = 'block'; }
+}
+
+// ── 家族管理 ──────────────────────────
+async function createFamily(uid, name, role) {
+  const inviteCode = Math.random().toString(36).substring(2,8).toUpperCase();
+  const familyId   = `fam_${uid.slice(0,8)}_${Date.now()}`;
+  await setDoc(doc(db,'families',familyId), {
+    createdAt: serverTimestamp(), createdBy: uid,
+    inviteCode, childName:'お子さん', childAge:8
+  });
+  await setDoc(doc(db,'inviteCodes',inviteCode), { familyId });
+  await setDoc(doc(db,'families',familyId,'members',uid), {
+    name, role, joinedAt: serverTimestamp(), uid
+  });
+  window.arohaDB.familyId  = familyId;
+  window.arohaDB.role      = role;
+  window.arohaDB.roleLabel = ROLE_LABELS[role] || name;
+  localStorage.setItem('aroha_family_id', familyId);
+  await migrateLocalStorage(familyId, uid, role);
+}
+
+async function joinFamily(uid, inviteCode, name, role) {
+  const code = inviteCode.toUpperCase();
+  const codeDoc = await getDoc(doc(db,'inviteCodes',code));
+  if (!codeDoc.exists()) throw new Error('招待コードが正しくありません');
+  const familyId = codeDoc.data().familyId;
+  await setDoc(doc(db,'families',familyId,'members',uid), {
+    name, role, joinedAt: serverTimestamp(), uid
+  });
+  window.arohaDB.familyId  = familyId;
+  window.arohaDB.role      = role;
+  window.arohaDB.roleLabel = ROLE_LABELS[role] || name;
+  localStorage.setItem('aroha_family_id', familyId);
+}
+
+async function loadFamilyContext(uid) {
+  const cached = localStorage.getItem('aroha_family_id');
+  if (cached) {
+    try {
+      const m = await getDoc(doc(db,'families',cached,'members',uid));
+      if (m.exists()) {
+        window.arohaDB.familyId  = cached;
+        window.arohaDB.role      = m.data().role;
+        window.arohaDB.roleLabel = ROLE_LABELS[m.data().role] || m.data().name;
+        return;
+      }
+    } catch(e) { /* キャッシュ無効 */ }
+  }
+  // 作成者として検索
+  try {
+    const q = query(collection(db,'families'), where('createdBy','==',uid), limit(1));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      const familyId = snap.docs[0].id;
+      const m = await getDoc(doc(db,'families',familyId,'members',uid));
+      if (m.exists()) {
+        window.arohaDB.familyId  = familyId;
+        window.arohaDB.role      = m.data().role;
+        window.arohaDB.roleLabel = ROLE_LABELS[m.data().role] || m.data().name;
+        localStorage.setItem('aroha_family_id', familyId);
+      }
+    }
+  } catch(e) { console.warn('[Aroha] Family lookup failed:', e); }
+}
+
+// ── 招待コード表示 ──────────────────────
+window.showInviteCode = async () => {
+  const { familyId } = window.arohaDB;
+  if (!familyId) { alert('ログインが必要です'); return; }
+  try {
+    const fDoc = await getDoc(doc(db,'families',familyId));
+    const code = fDoc.exists() ? fDoc.data().inviteCode : null;
+    if (code) {
+      alert(`招待コード: ${code}\n\nこのコードを家族に伝えて、新規登録時に入力してもらってください。`);
+    }
+  } catch(e) { alert('招待コードの取得に失敗しました'); }
+};
+
+// ── Firestoreへの保存 ──────────────────
+window.dbSave = async (colName, data) => {
+  const { familyId, user, role, roleLabel } = window.arohaDB;
+  if (!familyId || !user) return;
+  const enriched = {
+    ...data,
+    authorUid:  user.uid,
+    authorName: user.displayName || '',
+    authorRole: role,
+    roleLabel:  roleLabel,
+    createdAt:  serverTimestamp(),
+    localId:    data.id || Date.now()
+  };
+  delete enriched.id;
+  await addDoc(collection(db,'families',familyId,colName), enriched);
+};
+
+// ── リアルタイムリスナー ────────────────
+function startRealtimeListeners() {
+  const { familyId } = window.arohaDB;
+  if (!familyId) return;
+  window.arohaDB.unsubscribers.forEach(fn => fn());
+  window.arohaDB.unsubscribers = [];
+  ['diary','growth','reflect','homework','checkin'].forEach(col => {
+    const q = query(collection(db,'families',familyId,col), orderBy('createdAt','desc'), limit(60));
+    const unsub = onSnapshot(q, snap => {
+      const records = snap.docs.map(d => ({...d.data(), _fid: d.id}));
+      window[`_fs_${col}`] = records;
+      window.dispatchEvent(new CustomEvent(`aroha_${col}_updated`, { detail: records }));
+    }, err => console.warn(`[Aroha] ${col}:`, err.code));
+    window.arohaDB.unsubscribers.push(unsub);
+  });
+}
+
+// ── localStorageデータ移行 ─────────────
+async function migrateLocalStorage(familyId, uid, role) {
+  const roleLabel = ROLE_LABELS[role] || 'パパ';
+  const colMap = { diary:'cst_diary', growth:'cst_growth', reflect:'cst_reflect',
+                   homework:'cst_homework', checkin:'cst_records' };
+  for (const [col, key] of Object.entries(colMap)) {
+    const records = JSON.parse(localStorage.getItem(key)||'[]');
+    for (const r of records.slice(0,30)) {
+      try {
+        await addDoc(collection(db,'families',familyId,col), {
+          ...r, authorUid:uid, authorRole:role, roleLabel,
+          createdAt:serverTimestamp(), localId:r.id||Date.now(), migrated:true
+        });
+      } catch(e) {}
+    }
+  }
+}
+
+// ── 認証フォーム制御 ──────────────────
+window._authMode = 'login';
+window.toggleAuthMode = (mode) => {
+  window._authMode = mode;
+  const isLogin = mode === 'login';
+  document.getElementById('auth-title').textContent        = isLogin ? 'ログイン' : 'アカウント登録';
+  document.getElementById('auth-name-row').style.display   = isLogin ? 'none' : 'block';
+  document.getElementById('auth-role-row').style.display   = isLogin ? 'none' : 'block';
+  document.getElementById('auth-invite-row').style.display = isLogin ? 'none' : 'block';
+  document.getElementById('auth-submit-btn').textContent   = isLogin ? 'ログイン' : '登録する';
+  document.getElementById('auth-switch-msg').innerHTML     = isLogin
+    ? 'アカウントをお持ちでない方は <a href="#" onclick="toggleAuthMode(\'register\')" style="color:var(--sage-dark);font-weight:700;">新規登録</a>'
+    : 'すでにアカウントをお持ちの方は <a href="#" onclick="toggleAuthMode(\'login\')" style="color:var(--sage-dark);font-weight:700;">ログイン</a>';
+  document.getElementById('auth-error').style.display = 'none';
+};
+
+window.authSubmit = () => {
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if (window._authMode === 'login') {
+    window.firebaseSignIn(email, password);
+  } else {
+    const name   = document.getElementById('auth-name').value.trim() || 'パパ';
+    const role   = document.getElementById('auth-role').value;
+    const invite = document.getElementById('auth-invite').value.trim();
+    window.firebaseSignUp(email, password, name, role, invite);
+  }
+};
+
+console.log('[Aroha] Firebase ready');
+</script>
 
 <!-- 認証画面 -->
+<!-- ローディング画面 -->
+<div id="aroha-loading" style="
+  position:fixed; inset:0; z-index:2000;
+  background:var(--sage-dark);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  font-family:var(--font-sans);
+">
+  <div style="font-size:3rem;margin-bottom:16px;animation:breathPulse 1.5s ease-in-out infinite;">🌱</div>
+  <div style="font-family:'Shippori Mincho',serif;font-size:1.8rem;font-weight:700;color:white;letter-spacing:0.1em;">Aroha</div>
+  <div style="font-size:0.75rem;color:rgba(255,255,255,0.5);margin-top:8px;">読み込み中...</div>
+</div>
+
 <div id="aroha-auth" style="
   display:none; position:fixed; inset:0; z-index:1000;
   background:var(--cream); flex-direction:column;
