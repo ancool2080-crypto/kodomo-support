@@ -1556,21 +1556,36 @@ function showAuthError(code) {
 
 // ── 家族管理 ──────────────────────────
 async function createFamily(uid, name, role) {
-  const inviteCode = Math.random().toString(36).substring(2,8).toUpperCase();
-  const familyId   = `fam_${uid.slice(0,8)}_${Date.now()}`;
-  await setDoc(doc(db,'families',familyId), {
-    createdAt: serverTimestamp(), createdBy: uid,
-    inviteCode, childName:'お子さん', childAge:8
-  });
-  await setDoc(doc(db,'inviteCodes',inviteCode), { familyId });
-  await setDoc(doc(db,'families',familyId,'members',uid), {
-    name, role, joinedAt: serverTimestamp(), uid
-  });
-  window.arohaDB.familyId  = familyId;
-  window.arohaDB.role      = role;
-  window.arohaDB.roleLabel = ROLE_LABELS[role] || name;
-  localStorage.setItem('aroha_family_id', familyId);
-  await migrateLocalStorage(familyId, uid, role);
+  try {
+    const inviteCode = Math.random().toString(36).substring(2,8).toUpperCase();
+    const familyId   = `fam_${uid.slice(0,8)}_${Date.now()}`;
+    console.log('[Aroha] Creating family:', familyId, inviteCode);
+
+    await setDoc(doc(db,'families',familyId), {
+      createdAt: serverTimestamp(), createdBy: uid,
+      inviteCode, childName:'お子さん', childAge:8
+    });
+    console.log('[Aroha] Family doc created');
+
+    await setDoc(doc(db,'inviteCodes',inviteCode), { familyId });
+    console.log('[Aroha] Invite code created');
+
+    await setDoc(doc(db,'families',familyId,'members',uid), {
+      name, role, joinedAt: serverTimestamp(), uid
+    });
+    console.log('[Aroha] Member created');
+
+    window.arohaDB.familyId  = familyId;
+    window.arohaDB.role      = role;
+    window.arohaDB.roleLabel = ROLE_LABELS[role] || name;
+    localStorage.setItem('aroha_family_id', familyId);
+    console.log('[Aroha] Family context set:', window.arohaDB);
+
+    await migrateLocalStorage(familyId, uid, role);
+  } catch(err) {
+    console.error('[Aroha] createFamily error:', err);
+    throw err;
+  }
 }
 
 async function joinFamily(uid, inviteCode, name, role) {
@@ -1620,14 +1635,33 @@ async function loadFamilyContext(uid) {
 // ── 招待コード表示 ──────────────────────
 window.showInviteCode = async () => {
   const { familyId } = window.arohaDB;
-  if (!familyId) { alert('ログインが必要です'); return; }
-  try {
-    const fDoc = await getDoc(doc(db,'families',familyId));
-    const code = fDoc.exists() ? fDoc.data().inviteCode : null;
-    if (code) {
-      alert(`招待コード: ${code}\n\nこのコードを家族に伝えて、新規登録時に入力してもらってください。`);
+  console.log('[Aroha] showInviteCode, familyId:', familyId, 'user:', window.arohaDB.user?.uid);
+
+  if (!familyId) {
+    // familyIdがない場合、再取得を試みる
+    if (window.arohaDB.user) {
+      await loadFamilyContext(window.arohaDB.user.uid);
     }
-  } catch(e) { alert('招待コードの取得に失敗しました'); }
+    if (!window.arohaDB.familyId) {
+      alert('家族データが見つかりません。\n\nいったんログアウトして再度登録してみてください。');
+      return;
+    }
+  }
+
+  try {
+    const fDoc = await getDoc(doc(db,'families',window.arohaDB.familyId));
+    if (fDoc.exists()) {
+      const code = fDoc.data().inviteCode;
+      if (code) {
+        alert(`招待コード: ${code}\n\nこのコードを奥さんに伝えて、新規登録時の「招待コード」欄に入力してもらってください。`);
+        return;
+      }
+    }
+    alert('招待コードが見つかりません。\nFirebaseコンソールで確認するか、再登録をお試しください。');
+  } catch(e) {
+    console.error('[Aroha] showInviteCode error:', e);
+    alert(`エラー: ${e.message}\n\nFirebaseのセキュリティルールを確認してください。`);
+  }
 };
 
 // ── Firestoreへの保存 ──────────────────
