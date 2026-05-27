@@ -1442,13 +1442,95 @@
 </head>
 <body>
 
+<!-- Firebase -->
+<script type="module" src="firebase.js"></script>
+
+<!-- 認証画面 -->
+<div id="aroha-auth" style="
+  display:none; position:fixed; inset:0; z-index:1000;
+  background:var(--cream); flex-direction:column;
+  align-items:center; justify-content:center; padding:24px;
+  font-family:var(--font-sans);
+">
+  <div style="max-width:400px;width:100%;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:2.5rem;margin-bottom:8px;">🌱</div>
+      <div style="font-family:var(--font-serif);font-size:1.8rem;font-weight:700;color:var(--sage-dark);">Aroha</div>
+      <div style="font-size:0.78rem;color:var(--bark-light);margin-top:4px;">マオリ語で「愛・共感・寄り添う」</div>
+    </div>
+
+    <div style="background:white;border-radius:var(--radius-xl);padding:28px 24px;box-shadow:0 4px 24px var(--shadow);">
+      <div id="auth-title" style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;color:var(--sage-dark);margin-bottom:20px;">ログイン</div>
+
+      <div id="auth-name-row" style="display:none;margin-bottom:14px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--bark);margin-bottom:6px;">お名前</div>
+        <input id="auth-name" type="text" placeholder="例）田中まさき" style="width:100%;border:1.5px solid var(--mist);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font-sans);font-size:0.87rem;outline:none;box-sizing:border-box;">
+      </div>
+
+      <div id="auth-role-row" style="display:none;margin-bottom:14px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--bark);margin-bottom:6px;">役割</div>
+        <select id="auth-role" style="width:100%;border:1.5px solid var(--mist);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font-sans);font-size:0.87rem;outline:none;background:white;box-sizing:border-box;">
+          <option value="papa">👨 パパ</option>
+          <option value="mama">👩 ママ</option>
+          <option value="other">👤 その他</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--bark);margin-bottom:6px;">メールアドレス</div>
+        <input id="auth-email" type="email" placeholder="example@email.com" style="width:100%;border:1.5px solid var(--mist);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font-sans);font-size:0.87rem;outline:none;box-sizing:border-box;">
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--bark);margin-bottom:6px;">パスワード（6文字以上）</div>
+        <input id="auth-password" type="password" placeholder="••••••••" style="width:100%;border:1.5px solid var(--mist);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font-sans);font-size:0.87rem;outline:none;box-sizing:border-box;"
+          onkeydown="if(event.key==='Enter')authSubmit()">
+      </div>
+
+      <div id="auth-invite-row" style="display:none;margin-bottom:14px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--bark);margin-bottom:4px;">招待コード（家族に追加する場合）</div>
+        <div style="font-size:0.72rem;color:var(--bark-light);margin-bottom:6px;">パパがすでに登録済みなら、招待コードを入力して同じ家族に参加できます</div>
+        <input id="auth-invite" type="text" placeholder="例）AB12CD（空欄なら新規家族を作成）" style="width:100%;border:1.5px solid var(--mist);border-radius:var(--radius-sm);padding:10px 12px;font-family:var(--font-sans);font-size:0.87rem;outline:none;box-sizing:border-box;text-transform:uppercase;">
+      </div>
+
+      <div id="auth-error" style="display:none;background:var(--terra-pale);color:var(--terra);border-radius:var(--radius-sm);padding:10px 12px;font-size:0.8rem;margin-bottom:14px;"></div>
+
+      <button id="auth-submit-btn" data-label="ログイン" onclick="authSubmit()" style="
+        width:100%;background:var(--sage-dark);color:white;border:none;
+        border-radius:100px;padding:14px;font-family:var(--font-sans);
+        font-size:0.9rem;font-weight:700;cursor:pointer;letter-spacing:0.03em;
+      ">ログイン</button>
+
+      <div id="auth-switch-msg" style="text-align:center;margin-top:16px;font-size:0.8rem;color:var(--bark-light);line-height:1.8;">
+        アカウントをお持ちでない方は <a href="#" onclick="toggleAuthMode('register')" style="color:var(--sage-dark);font-weight:700;">新規登録</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- アプリ本体 -->
+<div id="aroha-app" style="display:none;">
+
 <!-- HEADER -->
 <header class="site-header">
   <div class="header-inner">
     <div class="header-icon">🌱</div>
-    <div>
+    <div style="flex:1;">
       <div class="header-title">Aroha</div>
       <div class="header-sub">マオリ語で「愛・共感・寄り添う」— 親子でいっしょに、一歩ずつ</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+      <div id="user-badge" style="font-size:0.72rem;color:var(--ochre-light);font-weight:600;"></div>
+      <button onclick="firebaseSignOut()" style="
+        background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
+        color:var(--mist);border-radius:100px;padding:4px 10px;
+        font-size:0.68rem;cursor:pointer;font-family:var(--font-sans);
+      ">ログアウト</button>
+      <button onclick="showInviteCode()" style="
+        background:var(--ochre);border:none;color:white;
+        border-radius:100px;padding:4px 10px;
+        font-size:0.68rem;cursor:pointer;font-family:var(--font-sans);font-weight:700;
+      ">招待コード</button>
     </div>
   </div>
 </header>
@@ -4322,7 +4404,98 @@ document.addEventListener('DOMContentLoaded', () => {
   // Self-check
   renderRecords();
   updateStreak();
+
+  // Firebase リアルタイム更新をUIに反映
+  window.addEventListener('aroha_diary_updated', (e) => {
+    window._firestoreDiary = e.detail;
+    renderDiaryList();
+  });
+  window.addEventListener('aroha_growth_updated', (e) => {
+    window._firestoreGrowth = e.detail;
+    renderGrowthTimeline();
+    updateGrowthStats();
+  });
+  window.addEventListener('aroha_reflect_updated', (e) => {
+    window._firestoreReflect = e.detail;
+    renderReflectHistory();
+  });
+  window.addEventListener('aroha_homework_updated', (e) => {
+    window._firestoreHomework = e.detail;
+    renderHwHistory();
+    updateHwStats();
+    renderWeakMap();
+  });
+  window.addEventListener('aroha_checkin_updated', (e) => {
+    window._firestoreCheckin = e.detail;
+    renderRecords();
+    updateStreak();
+  });
 });
+
+// ─────────────────────────────────
+//  Firestore対応: 記録取得関数をオーバーライド
+// ─────────────────────────────────
+// Firestoreデータがあればそちらを、なければlocalStorageを使う
+const _origGetDiaryEntries  = getDiaryEntries;
+const _origGetGrowthRecords = getGrowthRecords;
+const _origGetReflectRecords= getReflectRecords;
+const _origGetHwRecords     = getHwRecords;
+const _origGetRecords       = getRecords;
+
+function getDiaryEntries() {
+  if (window._firestoreDiary?.length) return window._firestoreDiary;
+  return _origGetDiaryEntries();
+}
+function getGrowthRecords() {
+  if (window._firestoreGrowth?.length) return window._firestoreGrowth;
+  return _origGetGrowthRecords();
+}
+function getReflectRecords() {
+  if (window._firestoreReflect?.length) return window._firestoreReflect;
+  return _origGetReflectRecords();
+}
+function getHwRecords() {
+  if (window._firestoreHomework?.length) return window._firestoreHomework;
+  return _origGetHwRecords();
+}
+function getRecords() {
+  if (window._firestoreCheckin?.length) return window._firestoreCheckin;
+  return _origGetRecords();
+}
+
+// ─────────────────────────────────
+//  Firestore対応: 保存関数をオーバーライド
+// ─────────────────────────────────
+// 各save関数の末尾でdbSave()も呼ぶ
+const _origSaveDiaryEntry = saveDiaryEntry;
+function saveDiaryEntry(entry) {
+  _origSaveDiaryEntry(entry);
+  if (window.arohaDB?.familyId) window.dbSave('diary', entry).catch(console.warn);
+}
+
+const _origSaveCheckin = (function() {
+  // saveCheckin内のlocalStorage保存部分を補完
+  return function(record) {
+    if (window.arohaDB?.familyId) window.dbSave('checkin', record).catch(console.warn);
+  };
+})();
+
+const _origAddGrowthRecord = addGrowthRecord;
+function addGrowthRecord() {
+  _origAddGrowthRecord();
+  // Firestore同期はonSnapshotが自動的にUI更新
+}
+
+const _origSaveReflect = saveReflect;
+function saveReflect() {
+  _origSaveReflect();
+}
+
+const _origHwSaveSession = hwSaveSession;
+function hwSaveSession() {
+  _origHwSaveSession();
+}
 </script>
+</div><!-- /aroha-app -->
 </body>
 </html>
