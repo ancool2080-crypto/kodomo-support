@@ -2,8 +2,27 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Aroha — 親子サポート</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3D5740">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Aroha">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152.png">
+<link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144.png">
+<link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+
+<!-- OGP -->
+<meta name="description" content="ASD・ADHD気質のお子さんを持つ父親のための日常サポートツール">
+<meta property="og:title" content="Aroha — 親子サポート">
+<meta property="og:description" content="マオリ語で「愛・共感・寄り添う」。親子でいっしょに、一歩ずつ。">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600;700&family=Zen+Kaku+Gothic+New:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -1194,6 +1213,26 @@
     font-size: 0.72rem; font-weight: 700; flex-shrink: 0;
   }
   .priority-text { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.65; }
+
+  /* ─── PWA / iOS SAFE AREA ───────────────── */
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .site-header {
+    padding-top: max(20px, calc(20px + env(safe-area-inset-top, 0px)));
+  }
+  .nav-bar {
+    top: max(82px, calc(82px + env(safe-area-inset-top, 0px)));
+  }
+  /* スタンドアロンモード時のナビ位置調整 */
+  @media (display-mode: standalone) {
+    .site-header {
+      padding-top: max(24px, calc(env(safe-area-inset-top, 0px) + 12px));
+    }
+    .nav-bar {
+      top: max(86px, calc(env(safe-area-inset-top, 0px) + 86px));
+    }
+  }
 
   /* ─── RESPONSIVE ─────────────────────────── */
   @media (max-width: 600px) {
@@ -2872,8 +2911,136 @@ function closeModalDirect() {
 }
 
 // ─────────────────────────────────
-//  INIT
+//  PWA: Service Worker 登録
 // ─────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js', { scope: '/kodomo-support/' })
+      .then(reg => {
+        console.log('[Aroha] SW registered:', reg.scope);
+
+        // 新バージョン検出時にユーザーに通知
+        reg.addEventListener('updatefound', () => {
+          const newWorker = reg.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner();
+            }
+          });
+        });
+      })
+      .catch(err => console.warn('[Aroha] SW registration failed:', err));
+  });
+}
+
+// ─── アップデートバナー ────────────────
+function showUpdateBanner() {
+  const banner = document.createElement('div');
+  banner.style.cssText = `
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--sage-dark); color:white; padding:12px 20px;
+    border-radius:100px; font-size:0.82rem; font-family:var(--font-sans);
+    box-shadow:0 4px 16px rgba(0,0,0,0.25); z-index:9999;
+    display:flex; align-items:center; gap:12px; white-space:nowrap;
+  `;
+  banner.innerHTML = `
+    <span>🌱 新しいバージョンがあります</span>
+    <button onclick="location.reload()" style="
+      background:var(--ochre); border:none; color:white; padding:6px 14px;
+      border-radius:100px; font-size:0.78rem; font-weight:700; cursor:pointer;
+    ">更新する</button>
+  `;
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 8000);
+}
+
+// ─── PWAインストールプロンプト ─────────
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallBanner();
+});
+
+function showInstallBanner() {
+  if (localStorage.getItem('aroha_install_dismissed')) return;
+  // スタンドアロンモードで動作中なら表示しない
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'install-banner';
+  banner.style.cssText = `
+    position:fixed; bottom:0; left:0; right:0;
+    background:var(--sage-dark); color:white;
+    padding:16px 20px 20px; z-index:9998;
+    display:flex; align-items:center; gap:14px;
+    box-shadow:0 -4px 20px rgba(0,0,0,0.2);
+    font-family:var(--font-sans);
+  `;
+  banner.innerHTML = `
+    <img src="icons/icon-72.png" style="width:44px;height:44px;border-radius:10px;flex-shrink:0;">
+    <div style="flex:1;">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:2px;">Aroha をホーム画面に追加</div>
+      <div style="font-size:0.75rem;opacity:0.75;">オフラインでも使えるアプリとして保存</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+      <button onclick="dismissInstall()" style="
+        background:rgba(255,255,255,0.15); border:none; color:white;
+        padding:8px 14px; border-radius:100px; font-size:0.78rem; cursor:pointer;
+      ">後で</button>
+      <button onclick="installApp()" style="
+        background:var(--ochre); border:none; color:white;
+        padding:8px 16px; border-radius:100px; font-size:0.78rem;
+        font-weight:700; cursor:pointer;
+      ">追加する</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+}
+
+async function installApp() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  console.log('[Aroha] Install outcome:', outcome);
+  deferredInstallPrompt = null;
+  document.getElementById('install-banner')?.remove();
+}
+
+function dismissInstall() {
+  localStorage.setItem('aroha_install_dismissed', '1');
+  document.getElementById('install-banner')?.remove();
+}
+
+window.addEventListener('appinstalled', () => {
+  console.log('[Aroha] App installed successfully');
+  document.getElementById('install-banner')?.remove();
+});
+
+// ─── オフライン状態インジケーター ──────
+function updateOnlineStatus() {
+  const existing = document.getElementById('offline-indicator');
+  if (!navigator.onLine) {
+    if (!existing) {
+      const el = document.createElement('div');
+      el.id = 'offline-indicator';
+      el.style.cssText = `
+        position:fixed; top:0; left:0; right:0; z-index:9997;
+        background:#8B4513; color:white; text-align:center;
+        padding:6px; font-size:0.75rem; font-family:var(--font-sans);
+      `;
+      el.textContent = '📡 オフライン中 — 記録機能は利用できます。AIアドバイスはオンライン時のみ';
+      document.body.appendChild(el);
+    }
+  } else {
+    existing?.remove();
+  }
+}
+
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
 document.addEventListener('DOMContentLoaded', () => {
   // Diary
   const today = new Date().toISOString().slice(0,10);
