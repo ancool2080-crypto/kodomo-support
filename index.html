@@ -1375,6 +1375,37 @@
   }
   .hw-stat-label { font-size: 0.7rem; color: var(--bark-light); margin-top: 3px; }
 
+  /* 単元バッジ */
+  .hw-unit-badge {
+    display: inline-block; font-size: 0.68rem; font-weight: 700;
+    padding: 2px 9px; border-radius: 100px;
+    background: var(--ochre-light); color: var(--bark);
+    border: 1px solid var(--ochre); margin-left: 4px;
+  }
+
+  /* 弱点マップ */
+  .weak-map-grid {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .weak-map-row {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .weak-map-label {
+    width: 90px; font-size: 0.78rem; color: var(--ink-soft);
+    flex-shrink: 0; text-align: right;
+  }
+  .weak-map-bar-wrap {
+    flex: 1; background: var(--mist); border-radius: 100px; height: 10px; overflow: hidden;
+  }
+  .weak-map-bar {
+    height: 100%; border-radius: 100px;
+    background: linear-gradient(90deg, var(--sage), var(--ochre));
+    transition: width 0.6s ease;
+  }
+  .weak-map-count {
+    font-size: 0.75rem; color: var(--bark-light); width: 24px; text-align: right; flex-shrink: 0;
+  }
+
   /* ─── PWA / iOS SAFE AREA ───────────────── */
   body {
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -1443,13 +1474,14 @@
   <!-- ══ MODULE 9: 宿題AI ══ -->
   <section id="mod-homework" class="module">
     <div class="section-heading">宿題AI</div>
-    <div class="section-sub">プリントや問題の写真を撮ってアップロードすると、AIが解説します。やり取りは記録されます。</div>
+    <div class="section-sub">プリントの写真を撮ってアップロード。AIが問題を読み取り、子ども向け＋教え方の両方で解説します。</div>
 
     <!-- 統計 -->
     <div class="hw-stats-grid" id="hw-stats-grid">
       <div class="hw-stat-card"><div class="hw-stat-num" id="hws-total">0</div><div class="hw-stat-label">総質問数</div></div>
       <div class="hw-stat-card"><div class="hw-stat-num" id="hws-week">0</div><div class="hw-stat-label">今週</div></div>
-      <div class="hw-stat-card"><div class="hw-stat-num" id="hws-most">—</div><div class="hw-stat-label">よく使う教科</div></div>
+      <div class="hw-stat-card"><div class="hw-stat-num" id="hws-most">—</div><div class="hw-stat-label">最多教科</div></div>
+      <div class="hw-stat-card"><div class="hw-stat-num" id="hws-weak">—</div><div class="hw-stat-label">要注目単元</div></div>
     </div>
 
     <div class="diary-form-card">
@@ -1467,15 +1499,33 @@
         </div>
       </div>
 
+      <!-- 単元入力 -->
+      <div class="form-group">
+        <span class="form-label">🏷 単元（AIが自動判定しますが、手入力でも可）</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" id="hw-unit-input" class="api-key-input"
+            style="flex:1;margin-bottom:0;"
+            placeholder="例）かけ算・文章題・漢字の読み・植物のつくり">
+          <div id="hw-unit-ai-badge" style="display:none;">
+            <span class="hw-unit-badge">AI判定中…</span>
+          </div>
+        </div>
+        <!-- よく使う単元クイック選択 -->
+        <div id="hw-unit-quick" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;"></div>
+      </div>
+
       <!-- 解説モード -->
       <div class="form-group">
-        <span class="form-label">👤 解説モード</span>
+        <span class="form-label">👤 表示モード</span>
         <div class="hw-mode-row">
-          <button class="hw-mode-btn active" id="hw-mode-child" onclick="selectHwMode('child')">
-            👦 子ども向け<br><span style="font-size:0.72rem;font-weight:400;">ひらがな多め・やさしい言葉</span>
+          <button class="hw-mode-btn active" id="hw-mode-both" onclick="selectHwMode('both')">
+            👨‍👦 両方表示<br><span style="font-size:0.72rem;font-weight:400;">子ども向け＋教え方</span>
+          </button>
+          <button class="hw-mode-btn" id="hw-mode-child" onclick="selectHwMode('child')">
+            👦 子ども向け<br><span style="font-size:0.72rem;font-weight:400;">ひらがな多め</span>
           </button>
           <button class="hw-mode-btn" id="hw-mode-parent" onclick="selectHwMode('parent')">
-            👨 教え方ガイド<br><span style="font-size:0.72rem;font-weight:400;">父親が理解して伝えるための解説</span>
+            👨 教え方のみ<br><span style="font-size:0.72rem;font-weight:400;">スクリプト付き</span>
           </button>
         </div>
       </div>
@@ -1488,7 +1538,7 @@
           <input type="file" id="hw-file-input" accept="image/*" capture="environment" onchange="hwFileSelected(event)">
           <span class="hw-upload-icon">📷</span>
           <div class="hw-upload-label">写真をタップして選ぶ</div>
-          <div class="hw-upload-sub">カメラで撮影 または ファイルを選択<br>JPEG / PNG / WEBP 対応</div>
+          <div class="hw-upload-sub">カメラで撮影 または ファイルを選択</div>
         </div>
         <div class="hw-preview-wrap" id="hw-preview-wrap">
           <img class="hw-preview-img" id="hw-preview-img" src="" alt="プレビュー">
@@ -1514,6 +1564,12 @@
         <button class="btn" style="background:var(--cream);color:var(--bark);font-size:0.78rem;padding:8px 14px;border:1.5px solid var(--mist);" onclick="hwNewSession()">🔄 新しい問題</button>
         <button class="btn" style="background:var(--cream);color:var(--bark);font-size:0.78rem;padding:8px 14px;border:1.5px solid var(--mist);" onclick="hwSaveSession()">💾 この会話を保存</button>
       </div>
+    </div>
+
+    <!-- 弱点マップ -->
+    <div class="card" id="hw-weak-card" style="display:none;">
+      <div class="card-title"><span class="icon">📊</span> 単元別 質問マップ</div>
+      <div class="weak-map-grid" id="hw-weak-map"></div>
     </div>
 
     <!-- 履歴 -->
@@ -2952,12 +3008,444 @@ function renderReport(label, text) {
 // ─────────────────────────────────
 //  MODULE 9: 宿題AI
 // ─────────────────────────────────
-let hwSubject     = '算数';
-let hwMode        = 'child';         // 'child' | 'parent'
-let hwImageB64    = null;            // base64 data (without prefix)
-let hwImageMime   = 'image/jpeg';
-let hwMessages    = [];              // Claude API形式のmessages配列
+let hwSubject      = '算数';
+let hwUnit         = '';             // 単元（AIが自動判定 or 手動入力）
+let hwMode         = 'both';         // 'both' | 'child' | 'parent'
+let hwImageB64     = null;
+let hwImageMime    = 'image/jpeg';
+let hwMessages     = [];             // Claude API messages配列
 let hwSessionSaved = false;
+
+// 教科別デフォルト単元候補
+const HW_UNIT_SUGGESTIONS = {
+  '算数': ['たし算','ひき算','かけ算','わり算','分数','小数','文章題','図形','時計・時間','単位'],
+  '国語': ['漢字の読み','漢字の書き','文章読解','作文','言葉の意味','音読','ローマ字'],
+  '理科': ['植物のつくり','昆虫','天気','水のすがた','電気','磁石','星と月'],
+  '社会': ['地図の読み方','都道府県','農業・産業','歴史','環境問題'],
+  '英語': ['アルファベット','単語','英文法','リスニング','スピーキング'],
+  '其の他': []
+};
+
+// ── 教科・モード・単元選択 ─────────────
+function selectHwSubj(btn, subj) {
+  document.querySelectorAll('.hw-subj-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  hwSubject = subj;
+  renderUnitQuick();
+}
+
+function selectHwMode(mode) {
+  hwMode = mode;
+  ['both','child','parent'].forEach(m => {
+    document.getElementById('hw-mode-' + m)?.classList.toggle('active', m === mode);
+  });
+}
+
+function renderUnitQuick() {
+  const wrap = document.getElementById('hw-unit-quick');
+  const suggestions = HW_UNIT_SUGGESTIONS[hwSubject] || [];
+  wrap.innerHTML = suggestions.map(s =>
+    `<button onclick="setHwUnit('${s}')" style="
+      font-size:0.72rem;padding:4px 10px;border-radius:100px;
+      border:1px solid var(--mist);background:white;cursor:pointer;
+      color:var(--ink-soft);transition:all 0.15s;
+    " onmouseover="this.style.borderColor='var(--sage)'"
+       onmouseout="this.style.borderColor='var(--mist)'">${s}</button>`
+  ).join('');
+}
+
+function setHwUnit(unit) {
+  document.getElementById('hw-unit-input').value = unit;
+  hwUnit = unit;
+}
+
+// ── 画像ハンドリング ──────────────────
+function hwFileSelected(e) {
+  const file = e.target.files[0];
+  if (file) hwLoadImage(file);
+}
+function hwDragOver(e) { e.preventDefault(); document.getElementById('hw-upload-zone').classList.add('dragover'); }
+function hwDragLeave()  { document.getElementById('hw-upload-zone').classList.remove('dragover'); }
+function hwDrop(e) {
+  e.preventDefault();
+  document.getElementById('hw-upload-zone').classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) hwLoadImage(file);
+}
+function hwLoadImage(file) {
+  hwImageMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const dataUrl = ev.target.result;
+    hwImageB64 = dataUrl.split(',')[1];
+    document.getElementById('hw-preview-img').src = dataUrl;
+    document.getElementById('hw-preview-wrap').classList.add('visible');
+    document.getElementById('hw-upload-zone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+function hwClearImage() {
+  hwImageB64 = null;
+  document.getElementById('hw-preview-wrap').classList.remove('visible');
+  document.getElementById('hw-upload-zone').style.display = '';
+  document.getElementById('hw-file-input').value = '';
+}
+
+// ── 入力UI ───────────────────────────
+function hwKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); hwSend(); }
+}
+function hwAutoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+// ── メイン送信処理 ────────────────────
+async function hwSend() {
+  const textEl = document.getElementById('hw-text-input');
+  const userText = textEl.value.trim();
+  if (!userText && !hwImageB64) return;
+
+  const apiKey = getApiKey();
+  hwUnit = document.getElementById('hw-unit-input').value.trim() || hwUnit;
+  hwSessionSaved = false;
+
+  // ── ユーザーメッセージ ──
+  const userContent = [];
+  if (hwImageB64) {
+    userContent.push({ type: 'image', source: { type: 'base64', media_type: hwImageMime, data: hwImageB64 } });
+  }
+  userContent.push({ type: 'text', text: userText || 'この問題を解説してください。' });
+  hwMessages.push({ role: 'user', content: userContent });
+
+  hwAddBubble('user', userText || '📷 画像を送信しました', hwImageB64 ? `data:${hwImageMime};base64,${hwImageB64}` : null);
+  textEl.value = ''; textEl.style.height = '44px';
+  if (hwImageB64) hwClearImage();
+
+  const loadingId = hwAddLoading();
+
+  // ── システムプロンプト（モード別） ──
+  const unitHint = hwUnit ? `単元のヒント: ${hwUnit}` : '';
+  const isFirst = hwMessages.length === 1;
+
+  const childPrompt = `あなたは8歳の男の子の勉強を手伝うやさしい先生です。
+この子はASDとADHDの気質があり、集中が続きにくいですが心優しい子です。
+【ルール】
+・ひらがなを多く使い、むずかしい漢字にはふりがなをつける
+・一度に教えることは1つだけ
+・「まず〇〇するよ」「つぎに〇〇するよ」と順番を番号で示す
+・できたことをほめる言葉を最後に入れる
+・絵や例え話で具体的に説明する
+教科：${hwSubject}　${unitHint}`;
+
+  const parentPrompt = `あなたはASD・ADHD気質（8歳男児）の父親に宿題の教え方を指導する専門コーチです。
+【ルール】
+・父親が子どもに伝えるための教え方の手順を具体的に示す
+・「こう言ってみてください」という声かけスクリプトを含める
+・ASD/ADHD気質の子に効果的なアプローチ（視覚化・具体例・小分け・即時褒め）を前提にする
+・子どもが詰まりやすいポイントとその対処法を添える
+・威圧的にならないトーンにも触れる
+教科：${hwSubject}　${unitHint}`;
+
+  const bothPrompt = `あなたはASD・ADHD気質（8歳男児）の宿題をサポートするAIです。
+回答は以下の2部構成で返してください：
+
+## 👦 子どもへの説明
+（ひらがな多め・番号付き手順・最後に褒め言葉・1つずつ教える）
+
+## 👨 お父さんへの教え方ガイド
+（声かけスクリプト・つまずきポイント・ASD/ADHD配慮ポイント）
+
+教科：${hwSubject}　${unitHint}
+${isFirst && hwImageB64 ? '※まず問題の内容をOCRで読み取って正確に把握し、それを元に解説してください。' : ''}`;
+
+  const systemPrompt = hwMode === 'child' ? childPrompt
+    : hwMode === 'parent' ? parentPrompt
+    : bothPrompt;
+
+  // ── 単元自動判定（初回送信時のみ） ──
+  const shouldDetectUnit = isFirst && !hwUnit && apiKey;
+
+  try {
+    let aiText = '';
+
+    if (apiKey) {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1400,
+          system: systemPrompt,
+          messages: hwMessages
+        })
+      });
+      if (!res.ok) throw new Error('APIエラー: ' + res.status);
+      const data = await res.json();
+      aiText = data.content?.[0]?.text || '解説を取得できませんでした。';
+
+      // 単元自動判定（別リクエスト・軽量）
+      if (shouldDetectUnit) detectUnit(hwMessages[0]);
+
+    } else {
+      await new Promise(r => setTimeout(r, 1200));
+      aiText = hwMode === 'both'
+        ? `## 👦 子どもへの説明\n\nもんだいを みてみたよ！\n\n1. まず もんだいを よんでみよう\n2. わからない ことばを さがそう\n3. いっしょに かんがえよう\n\nさいごまで がんばったね！えらい！\n\n## 👨 お父さんへの教え方ガイド\n\nAPIキーを設定すると、実際の問題をOCRで読み取り、詳しい教え方ガイドが表示されます。\n\n**声かけ例**「まず問題を一緒に声に出して読もう。どんな問題かな？」`
+        : hwMode === 'child'
+        ? `もんだいを みてみたよ！\n\nAPIキーを せっていすると、もんだいの ないようを よんで せつめいするよ。`
+        : `APIキーを設定すると、問題の内容を読み取り、教え方スクリプトを詳しく表示します。`;
+    }
+
+    hwMessages.push({ role: 'assistant', content: aiText });
+    hwRemoveLoading(loadingId);
+    hwAddBubble('ai', aiText);
+
+    const chatArea = document.getElementById('hw-chat-area');
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+  } catch(err) {
+    hwRemoveLoading(loadingId);
+    hwAddBubble('ai', `⚠️ エラーが発生しました: ${err.message}`);
+  }
+}
+
+// ── 単元自動判定 ──────────────────────
+async function detectUnit(firstMessage) {
+  const badge = document.getElementById('hw-unit-ai-badge');
+  badge.style.display = 'block';
+  const apiKey = getApiKey();
+  try {
+    // 画像がある場合はテキストのみで単元を推測
+    const content = Array.isArray(firstMessage.content)
+      ? firstMessage.content.filter(c => c.type === 'text').map(c => c.text).join(' ')
+      : firstMessage.content;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 50,
+        messages: [{
+          role: 'user',
+          content: `以下の宿題の質問から、単元名を日本語で5文字以内で1つだけ答えてください。例：「かけ算」「漢字の読み」「植物のつくり」など。余計な説明は不要です。\n\n教科：${hwSubject}\n質問：${content.slice(0,200)}`
+        }]
+      })
+    });
+    const data = await res.json();
+    const unit = data.content?.[0]?.text?.trim().replace(/^「|」$/g,'') || '';
+    if (unit && unit.length <= 15) {
+      hwUnit = unit;
+      document.getElementById('hw-unit-input').value = unit;
+    }
+  } catch(e) { /* 失敗しても継続 */ }
+  badge.style.display = 'none';
+}
+
+// ── チャットUI ────────────────────────
+function hwAddBubble(role, text, imgSrc) {
+  const empty = document.getElementById('hw-chat-empty');
+  if (empty) empty.remove();
+
+  const area = document.getElementById('hw-chat-area');
+  const wrap = document.createElement('div');
+  wrap.className = `hw-msg ${role === 'user' ? 'user' : ''}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'hw-msg-avatar';
+  avatar.textContent = role === 'user' ? '👨' : '🌱';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'hw-msg-bubble';
+
+  if (imgSrc) {
+    const img = document.createElement('img');
+    img.src = imgSrc;
+    bubble.appendChild(img);
+  }
+
+  if (text) {
+    const p = document.createElement('div');
+    p.innerHTML = text
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/^## (.+)$/gm, '<strong style="font-size:0.9rem;display:block;margin:10px 0 4px;">$1</strong>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g,'<br>');
+    bubble.appendChild(p);
+  }
+
+  wrap.appendChild(avatar);
+  wrap.appendChild(bubble);
+  area.appendChild(wrap);
+  area.scrollTop = area.scrollHeight;
+  return wrap;
+}
+
+function hwAddLoading() {
+  const area = document.getElementById('hw-chat-area');
+  const id = 'hw-load-' + Date.now();
+  const wrap = document.createElement('div');
+  wrap.id = id; wrap.className = 'hw-msg';
+  wrap.innerHTML = `<div class="hw-msg-avatar">🌱</div>
+    <div class="hw-msg-bubble"><div class="dot-anim"><span></span><span></span><span></span></div></div>`;
+  area.appendChild(wrap);
+  area.scrollTop = area.scrollHeight;
+  return id;
+}
+function hwRemoveLoading(id) { document.getElementById(id)?.remove(); }
+
+// ── セッション管理 ────────────────────
+function hwNewSession() {
+  if (hwMessages.length > 0 && !hwSessionSaved) {
+    if (!confirm('現在の会話を保存せずに新しい問題を始めますか？')) return;
+  }
+  hwMessages = []; hwImageB64 = null; hwSessionSaved = false;
+  hwUnit = ''; document.getElementById('hw-unit-input').value = '';
+  hwClearImage();
+  document.getElementById('hw-chat-area').innerHTML =
+    '<div class="hw-chat-empty" id="hw-chat-empty">📷 写真をアップロードするか<br>テキストで質問してください</div>';
+  document.getElementById('hw-text-input').value = '';
+}
+
+function hwSaveSession() {
+  if (!hwMessages.length) { alert('会話がありません。'); return; }
+
+  const firstUser = hwMessages.find(m => m.role === 'user');
+  const firstAI   = hwMessages.find(m => m.role === 'assistant');
+  const unit = document.getElementById('hw-unit-input').value.trim() || hwUnit || '未分類';
+  const questionText = firstUser
+    ? (Array.isArray(firstUser.content)
+        ? (firstUser.content.find(c => c.type === 'text')?.text || '（画像のみ）')
+        : firstUser.content)
+    : '（不明）';
+
+  const record = {
+    id: Date.now(),
+    subject: hwSubject,
+    unit: unit,
+    mode: hwMode,
+    question: questionText.slice(0, 150),
+    answer: typeof firstAI?.content === 'string' ? firstAI.content.slice(0, 400) : '',
+    turns: Math.floor(hwMessages.length / 2),
+    date: new Date().toISOString()
+  };
+
+  const records = getHwRecords();
+  records.unshift(record);
+  if (records.length > 60) records.pop();
+  localStorage.setItem('cst_homework', JSON.stringify(records));
+  hwSessionSaved = true;
+  updateHwStats();
+  renderHwHistory();
+  renderWeakMap();
+  alert(`「${hwSubject} / ${unit}」として保存しました！`);
+}
+
+function getHwRecords() {
+  try { return JSON.parse(localStorage.getItem('cst_homework') || '[]'); } catch { return []; }
+}
+
+// ── 統計・弱点マップ ──────────────────
+function updateHwStats() {
+  const records = getHwRecords();
+  const now = new Date();
+  const weekAgo = new Date(now - 7*864e5);
+  document.getElementById('hws-total').textContent = records.length;
+  document.getElementById('hws-week').textContent  = records.filter(r => new Date(r.date) >= weekAgo).length;
+
+  if (records.length) {
+    // 最多教科
+    const subjFreq = {};
+    records.forEach(r => { subjFreq[r.subject] = (subjFreq[r.subject]||0) + 1; });
+    document.getElementById('hws-most').textContent =
+      Object.entries(subjFreq).sort((a,b)=>b[1]-a[1])[0][0];
+
+    // 最多単元（要注目）
+    const unitFreq = {};
+    records.forEach(r => { if(r.unit && r.unit !== '未分類') unitFreq[r.unit] = (unitFreq[r.unit]||0) + 1; });
+    const topUnit = Object.entries(unitFreq).sort((a,b)=>b[1]-a[1])[0];
+    document.getElementById('hws-weak').textContent = topUnit ? topUnit[0] : '—';
+  }
+}
+
+function renderWeakMap() {
+  const records = getHwRecords();
+  if (!records.length) return;
+
+  // 教科×単元の集計
+  const unitFreq = {};
+  records.forEach(r => {
+    if (!r.unit || r.unit === '未分類') return;
+    const key = `${r.subject} / ${r.unit}`;
+    unitFreq[key] = (unitFreq[key]||0) + 1;
+  });
+
+  const entries = Object.entries(unitFreq).sort((a,b) => b[1]-a[1]).slice(0, 10);
+  if (!entries.length) return;
+
+  const maxVal = entries[0][1];
+  const card = document.getElementById('hw-weak-card');
+  const map  = document.getElementById('hw-weak-map');
+  card.style.display = 'block';
+
+  const subjColors = { '算数':'#5C7A5F','国語':'#C0714F','理科':'#6B5B95','社会':'#C89A3E','英語':'#3355AA','その他':'#8AAE8D' };
+
+  map.innerHTML = entries.map(([key, count]) => {
+    const subj = key.split(' / ')[0];
+    const color = subjColors[subj] || '#8AAE8D';
+    const pct = Math.round((count / maxVal) * 100);
+    return `
+      <div class="weak-map-row">
+        <div class="weak-map-label">${key}</div>
+        <div class="weak-map-bar-wrap">
+          <div class="weak-map-bar" style="width:${pct}%;background:linear-gradient(90deg,${color},${color}99);"></div>
+        </div>
+        <div class="weak-map-count">${count}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderHwHistory() {
+  const records = getHwRecords();
+  const list = document.getElementById('hw-history-list');
+  if (!records.length) {
+    list.innerHTML = '<div class="record-empty">まだ記録がありません。</div>';
+    return;
+  }
+  const subjColors = { '算数':'#5C7A5F','国語':'#C0714F','理科':'#6B5B95','社会':'#C89A3E','英語':'#3355AA','その他':'#8AAE8D' };
+  list.innerHTML = records.slice(0, 20).map(r => {
+    const d = new Date(r.date);
+    const ds = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const modeMap = { both:'👨‍👦 両方', child:'👦 子ども', parent:'👨 教え方' };
+    const color = subjColors[r.subject] || '#8AAE8D';
+    return `
+      <div class="hw-history-item">
+        <div class="hw-history-header">
+          <span class="hw-history-date">${ds}</span>
+          <span class="hw-history-subj" style="background:${color};">${r.subject}</span>
+          ${r.unit ? `<span class="hw-unit-badge">${r.unit}</span>` : ''}
+          <span class="diary-tag">${modeMap[r.mode]||r.mode}</span>
+          <span class="diary-tag">${r.turns}往復</span>
+        </div>
+        <div class="hw-history-q">Q: ${r.question}</div>
+        ${r.answer ? `<div class="hw-history-a">${r.answer.replace(/##.*?\n/g,'').replace(/\*\*/g,'').slice(0,140)}…</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────
+//  API KEY
+// ─────────────────────────────────
 
 // ── 教科・モード選択 ──────────────────
 function selectHwSubj(btn, subj) {
@@ -3827,6 +4315,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Homework AI
   updateHwStats();
   renderHwHistory();
+  renderWeakMap();
+  renderUnitQuick();
   // Growth
   renderGrowthTimeline();
   updateGrowthStats();
